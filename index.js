@@ -8,6 +8,7 @@ import path from "path";
 import { Admin } from "./helpers/helperFunction.js";
 import authRouter from "./routes/auth/authRouter.js";
 import clientRouter from "./routes/client/clientRouter.js";
+import adminRouter from "./routes/admin/adminRouter.js";
 
 const app = express();
 const port = config.PORT;
@@ -53,7 +54,7 @@ app.use("/api/upload", express.static(path.join("..", "uploads")));
 //routing
 app.use("/api/auth", authRouter);
 app.use("/api/client", clientRouter);
-
+app.use("/api/admin", adminRouter);
 //production
 if (prod) {
   app.use("/", express.static(config.FRONTEND_PATH));
