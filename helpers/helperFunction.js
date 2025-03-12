@@ -6,7 +6,10 @@ import axios from "axios";
 import config from "../config.js";
 import crypto from "crypto";
 import usermodel from "../model/usermodel.js";
+import sibApi from "sib-api-v3-sdk";
+import dotenv from "dotenv";
 
+dotenv.config();
 const secrectKey = crypto.randomBytes(48).toString("hex");
 
 export function generateAccessToken(id, email, role) {
@@ -198,19 +201,55 @@ export async function getnumber(id) {
   return id;
 }
 
+// export async function getEmailOTP(email) {
+//   try {
+//     const apikey = config.APIKEY;
+
+//     const emailerUrl = "https://emailer.firstclusive.com";
+
+//     const resp = await axios.post(emailerUrl, {
+//       apikey,
+//       email,
+//     });
+//     return resp.data.otp;
+//   } catch (error) {
+//     console.log("otp error", error);
+//     return null;
+//   }
+// }
+
+dotenv.config();
+
+// Initialize Brevo client
 export async function getEmailOTP(email) {
   try {
-    const apikey = config.APIKEY;
+    const apikey = config.EMAIL_APIKEY; // Use Brevo API Key from .env
 
-    const emailerUrl = "https://emailer.firstclusive.com";
+    const brevoUrl = "https://api.brevo.com/v3/smtp/email"; // Brevo API endpoint
 
-    const resp = await axios.post(emailerUrl, {
-      apikey,
-      email,
-    });
-    return resp.data.otp;
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate 6-digit OTP
+
+    // Fix: Properly define emailData
+    const emailData = {
+      sender: {
+        email: process.env.EMAIL_SENDER,
+        name: "firstclusive branding",
+      }, // Use a verified sender email
+      to: [{ email: email }],
+      subject: "Your OTP Code to Reset Password",
+      htmlContent: `<p>Your OTP code is <strong>${otp}</strong>. It expires in 10 minutes.</p>`,
+    };
+
+    const headers = {
+      "api-key": apikey,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    };
+
+    const resp = await axios.post(brevoUrl, emailData, { headers });
+    return otp; // Return OTP for storing in the database
   } catch (error) {
-    console.log("otp error", error);
+    console.error("OTP Email Error:", error.response?.data || error.message);
     return null;
   }
 }

@@ -7,6 +7,7 @@ const userSchema = new Schema(
     mobile: String,
     password: String,
     email: String,
+    tokenotp: String,
   },
   { timestamps: true, versionKey: false }
 );
