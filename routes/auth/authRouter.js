@@ -3,7 +3,7 @@ import {
   bcryptPassword,
   comparePassword,
   generateAccessToken,
-  getEmailOTP,
+  //   getEmailOTP,
   getSessionData,
   validatetoken,
 } from "../../helpers/helperFunction.js";
