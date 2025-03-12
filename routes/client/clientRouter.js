@@ -1,12 +1,12 @@
 import { Router } from "express";
-import contactclientRouter from "./contactclient.js";
+import contactusRouter from "./contactusRouter.js";
+import talentRouter from "./talentRouter.js";
+import jobRouter from "./jobRouter.js";
 
+const clientRouter = Router();
 
+clientRouter.use("/contactus", contactusRouter);
+clientRouter.use("/talent", talentRouter);
+clientRouter.use("/job", jobRouter);
 
-
-const clientRouter = Router()
-
-
-clientRouter.use("/contact",contactclientRouter)
-
-export default clientRouter
+export default clientRouter;
