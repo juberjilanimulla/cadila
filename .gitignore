@@ -135,4 +135,5 @@ test*
 # test2.js
 #upload folder
 /uploads
-/logs
+/logs.env
+.env
