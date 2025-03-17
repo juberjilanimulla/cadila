@@ -4,13 +4,14 @@ import {
   successResponse,
 } from "../../helpers/serverResponse.js";
 import usermodel from "../../model/usermodel.js";
+import managerjobpostingRouter from "./managerjobpostingRouter.js";
 
 const managerRouter = Router();
 
 managerRouter.post("/approved/:id", recruiterapprovedHandler);
 managerRouter.post("/reject/:id", rejectrecruiterHandler);
 managerRouter.post("/job/create", createjobHandler);
-
+managerRouter.use("/jobposting", managerjobpostingRouter);
 export default managerRouter;
 
 async function recruiterapprovedHandler(req, res) {
