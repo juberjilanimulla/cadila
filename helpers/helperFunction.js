@@ -2,8 +2,8 @@ import { errorResponse } from "./serverResponse.js";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt, { compare } from "bcrypt";
-import axios from "axios";
-import config from "../config.js";
+// import axios from "axios";
+// import config from "../config.js";
 import crypto from "crypto";
 import usermodel from "../model/usermodel.js";
 import dotenv from "dotenv";
@@ -45,7 +45,7 @@ export function validatetoken(token) {
 export async function isAdminMiddleware(req, res, next) {
   const isAdmin = res.locals.role;
   // console.log("isAdmin", isAdmin);
-  if (!isAdmin || isAdmin !== "admin") {
+  if (!isAdmin || isAdmin !== "Admin") {
     errorResponse(res, 403, "user not authorized");
     return;
   }
@@ -86,7 +86,7 @@ export function authMiddleware(req, res, next) {
     next();
   } catch (error) {
     console.log(error.message);
-    errorResponse(res, 401, "user not authorized");
+    return errorResponse(res, 401, "user not authorized");
   }
 }
 
@@ -132,9 +132,10 @@ export async function Admin() {
         firstname: "admin",
         lastname: "admin",
         email: email,
-        role: "admin",
+        role: "Admin",
         mobile: "+1 (832) 757-9277",
         password: bcryptPassword("1234"),
+        approved: true,
       });
     } else {
       console.log("admin already exist");
@@ -217,39 +218,39 @@ export async function getnumber(id) {
 //   }
 // }
 
-dotenv.config();
+// dotenv.config();
 
 // Initialize Brevo client
-export async function getEmailOTP(email) {
-  try {
-    const apikey = config.EMAIL_APIKEY; // Use Brevo API Key from .env
+// export async function getEmailOTP(email) {
+//   try {
+//     const apikey = config.EMAIL_APIKEY; // Use Brevo API Key from .env
 
-    const brevoUrl = "https://api.brevo.com/v3/smtp/email"; // Brevo API endpoint
+//     const brevoUrl = "https://api.brevo.com/v3/smtp/email"; // Brevo API endpoint
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate 6-digit OTP
+//     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate 6-digit OTP
 
-    // Fix: Properly define emailData
-    const emailData = {
-      sender: {
-        email: process.env.EMAIL_SENDER,
-        name: "firstclusive branding",
-      }, // Use a verified sender email
-      to: [{ email: email }],
-      subject: "Your OTP Code to Reset Password",
-      htmlContent: `<p>Your OTP code is <strong>${otp}</strong>. It expires in 10 minutes.</p>`,
-    };
+//     // Fix: Properly define emailData
+//     const emailData = {
+//       sender: {
+//         email: process.env.EMAIL_SENDER,
+//         name: "firstclusive branding",
+//       }, // Use a verified sender email
+//       to: [{ email: email }],
+//       subject: "Your OTP Code to Reset Password",
+//       htmlContent: `<p>Your OTP code is <strong>${otp}</strong>. It expires in 10 minutes.</p>`,
+//     };
 
-    const headers = {
-      "api-key": apikey,
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
+//     const headers = {
+//       "api-key": apikey,
+//       "Content-Type": "application/json",
+//       Accept: "application/json",
+//     };
 
-    const resp = await axios.post(brevoUrl, emailData, { headers });
+//     const resp = await axios.post(brevoUrl, emailData, { headers });
 
-    return otp; // Return OTP for storing in the database
-  } catch (error) {
-    console.error("OTP Email Error:", error.response?.data || error.message);
-    return null;
-  }
-}
+//     return otp; // Return OTP for storing in the database
+//   } catch (error) {
+//     console.error("OTP Email Error:", error.response?.data || error.message);
+//     return null;
+//   }
+// }

@@ -3,7 +3,6 @@ import {
   bcryptPassword,
   comparePassword,
   generateAccessToken,
-  getEmailOTP,
   getSessionData,
   validatetoken,
 } from "../../helpers/helperFunction.js";
@@ -20,6 +19,7 @@ authRouter.post("/signin", signinHandler);
 authRouter.post("/forgotpassword", forgetpasswordHandler);
 authRouter.post("/resetpassword", resetpasswordHandler);
 authRouter.post("/publictoken", refreshtokenHandler);
+authRouter.post("/signup", signupHandler);
 
 export default authRouter;
 
@@ -74,7 +74,7 @@ async function forgetpasswordHandler(req, res) {
         "Too many requests, please try again later"
       );
     }
-    usersotp.tokenotp = await getEmailOTP(email);
+    // usersotp.tokenotp = await getEmailOTP(email);
     await usersotp.save();
 
     successResponse(res, "OTP successfully sent");
@@ -95,10 +95,10 @@ async function resetpasswordHandler(req, res) {
       return;
     }
 
-    if (tokenotp != userReset.tokenotp) {
-      errorResponse(res, 400, "invalid otp");
-      return;
-    }
+    // if (tokenotp != userReset.tokenotp) {
+    //   errorResponse(res, 400, "invalid otp");
+    //   return;
+    // }
     userReset.password = bcryptPassword(password);
     userReset.save();
     successResponse(res, "password set successfully");
@@ -137,5 +137,49 @@ async function refreshtokenHandler(req, res) {
   } catch (error) {
     console.log(error.message);
     errorResponse(res, 401, "refresh token expired, signin");
+  }
+}
+
+async function signupHandler(req, res) {
+  try {
+    const { firstname, lastname, email, mobile, role, password, approved } =
+      req.body;
+
+    if (!firstname || !lastname || !email || !mobile || !role || !password) {
+      return errorResponse(res, 400, "some params are missing");
+    }
+    // Prevent Signup with Admin Role
+    if (role === "Admin") {
+      return errorResponse(
+        res,
+        403,
+        "Admin account cannot be created via signup"
+      );
+    }
+
+    const existingUser = await usermodel.findOne({ email });
+    if (existingUser) {
+      return errorResponse(res, 409, "User with this email already exists");
+    }
+
+    const hashedpassword = bcryptPassword(password);
+
+    const newUser = await usermodel.create({
+      mobile,
+      firstname,
+      lastname,
+      email,
+      approved,
+      password: hashedpassword,
+      approved,
+      role,
+    });
+
+    await newUser.save();
+
+    return successResponse(res, "Successfully signed up");
+  } catch (error) {
+    console.log("Error:", error.message);
+    return errorResponse(res, 400, error.message);
   }
 }

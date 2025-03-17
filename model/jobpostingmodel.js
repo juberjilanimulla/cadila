@@ -1,20 +1,16 @@
 import { Schema, model } from "mongoose";
 
-const jobSchema = new Schema(
+const jobpostingSchema = new Schema(
   {
     jobtitle: String,
-    name: String,
-    email: String,
-    mobile: String,
-    linkedinlink: String,
-    pdf: {
-      type: String,
-      default: "",
-    },
     experience: String,
     salary: String,
     location: String,
     jobdescription: String,
+    approved: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true, versionKey: false }
 );
@@ -25,18 +21,18 @@ function currentLocalTimePlusOffset() {
   return new Date(now.getTime() + offset);
 }
 
-jobSchema.pre("save", function (next) {
+jobpostingSchema.pre("save", function (next) {
   const currentTime = currentLocalTimePlusOffset();
   this.createdAt = currentTime;
   this.updatedAt = currentTime;
   next();
 });
 
-jobSchema.pre("findOneAndUpdate", function (next) {
+jobpostingSchema.pre("findOneAndUpdate", function (next) {
   const currentTime = currentLocalTimePlusOffset();
   this.set({ updatedAt: currentTime });
   next();
 });
 
-const jobmodels = model("job", jobSchema);
-export default jobmodels;
+const jobpostingmodel = model("jobposting", jobpostingSchema);
+export default jobpostingmodel;
