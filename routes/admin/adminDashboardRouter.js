@@ -4,19 +4,19 @@ import {
   successResponse,
 } from "../../helpers/serverResponse.js";
 import usermodel from "../../model/usermodel.js";
-
-
+import { bcryptPassword } from "../../helpers/helperFunction.js";
 const adminDashboardRouter = Router();
 
 adminDashboardRouter.post("/approve/:id", approveHandler);
 adminDashboardRouter.post("/reject/:id", rejectHandler);
-
+adminDashboardRouter.post("/resetpassword", resetpasswordHandler);
 
 export default adminDashboardRouter;
 
 async function approveHandler(req, res) {
   try {
     const id = res.locals && res.locals.id;
+    console.log("id", id);
     if (!id) {
       return errorResponse(res, 401, "Unauthorized access - Invalid user");
     }
@@ -88,5 +88,44 @@ async function rejectHandler(req, res) {
   } catch (error) {
     console.error("Error:", error);
     return errorResponse(res, 500, "Internal server error");
+  }
+}
+
+//Reset password
+async function resetpasswordHandler(req, res) {
+  try {
+    const { email, password } = req.body;
+    // 🔹 Get the Admin's role from authentication middleware
+    const requestingUserRole = res.locals.role;
+
+    const userReset = await usermodel.findOne({ email });
+
+    if (!userReset) {
+      errorResponse(res, 400, "email id not found");
+      return;
+    }
+    if (requestingUserRole !== "Admin") {
+      return errorResponse(
+        res,
+        403,
+        "Access denied. Only Admin can reset passwords."
+      );
+    }
+
+    // 🔹 Admin should not reset their own password
+    if (userReset.role === "Admin") {
+      return errorResponse(
+        res,
+        403,
+        "Admin password cannot be reset by another Admin."
+      );
+    }
+
+    userReset.password = bcryptPassword(password);
+    await userReset.save({ validateBeforeSave: false });
+
+    return successResponse(res, "Password reset successfully");
+  } catch (error) {
+    console.log("error", error);
   }
 }

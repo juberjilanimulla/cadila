@@ -17,7 +17,7 @@ const authRouter = Router();
 
 authRouter.post("/signin", signinHandler);
 authRouter.post("/forgotpassword", forgetpasswordHandler);
-authRouter.post("/resetpassword", resetpasswordHandler);
+// authRouter.post("/resetpassword", resetpasswordHandler);
 authRouter.post("/publictoken", refreshtokenHandler);
 authRouter.post("/signup", signupHandler);
 
@@ -39,6 +39,11 @@ async function signinHandler(req, res) {
       return errorResponse(res, 404, "invalid password");
     }
 
+    if (users.role === "manager" || users.role === "recruiter") {
+      if (!users.approved) {
+        return errorResponse(res, 403, "Wait for admin approval");
+      }
+    }
     const userid = users._id.toString();
 
     const { encoded_token, public_token } = generateAccessToken(
@@ -84,29 +89,6 @@ async function forgetpasswordHandler(req, res) {
   }
 }
 
-//Reset password
-async function resetpasswordHandler(req, res) {
-  try {
-    const { email, tokenotp, password } = req.body;
-    const userReset = await usermodel.findOne({ email });
-
-    if (!userReset) {
-      errorResponse(res, 400, "email id not found");
-      return;
-    }
-
-    // if (tokenotp != userReset.tokenotp) {
-    //   errorResponse(res, 400, "invalid otp");
-    //   return;
-    // }
-    userReset.password = bcryptPassword(password);
-    userReset.save();
-    successResponse(res, "password set successfully");
-  } catch (error) {
-    console.log("error", error);
-  }
-}
-
 //refresh token
 async function refreshtokenHandler(req, res) {
   try {
@@ -140,15 +122,79 @@ async function refreshtokenHandler(req, res) {
   }
 }
 
+// async function signupHandler(req, res) {
+//   try {
+//     const { firstname, lastname, email, mobile, role, password, approved } =
+//       req.body;
+
+//     if (!firstname || !lastname || !email || !mobile || !role || !password) {
+//       return errorResponse(res, 400, "some params are missing");
+//     }
+//     // Prevent Signup with Admin Role
+//     if (role === "Admin") {
+//       return errorResponse(
+//         res,
+//         403,
+//         "Admin account cannot be created via signup"
+//       );
+//     }
+
+//     const existingUser = await usermodel.findOne({ email });
+//     if (existingUser) {
+//       return errorResponse(res, 409, "User with this email already exists");
+//     }
+//     const managerCount = await usermodel.countDocuments({ role: "manager" });
+
+//     // 🔹 If 10 managers already exist, block signup
+//     if (managerCount > 10) {
+//       return errorResponse(
+//         res,
+//         400,
+//         "Cannot add more managers. Limit reached (10)."
+//       );
+//     }
+
+//     const hashedpassword = bcryptPassword(password);
+
+//     const newUser = await usermodel.create({
+//       mobile,
+//       firstname,
+//       lastname,
+//       email,
+//       approved,
+//       password: hashedpassword,
+//       approved,
+//       role,
+//     });
+
+//     await newUser.validate(); // Ensure pre-validation runs
+
+//     if (newUser.lastManagerSignup) {
+//       await newUser.save();
+//       return successResponse(
+//         res,
+//         "This one will be the last signup with manager.",
+//         newUser
+//       );
+//     }
+
+//     await newUser.save();
+//     return successResponse(res, "Successfully signed up", newUser);
+//   } catch (error) {
+//     console.log("Error:", error.message);
+//     return errorResponse(res, 400, error.message);
+//   }
+// }
 async function signupHandler(req, res) {
   try {
     const { firstname, lastname, email, mobile, role, password, approved } =
       req.body;
 
     if (!firstname || !lastname || !email || !mobile || !role || !password) {
-      return errorResponse(res, 400, "some params are missing");
+      return errorResponse(res, 400, "Some params are missing");
     }
-    // Prevent Signup with Admin Role
+
+    // 🔹 Prevent Signup with Admin Role
     if (role === "Admin") {
       return errorResponse(
         res,
@@ -162,22 +208,48 @@ async function signupHandler(req, res) {
       return errorResponse(res, 409, "User with this email already exists");
     }
 
+    // 🔹 Check Manager Limit (Max 10)
+    if (role === "manager") {
+      const managerCount = await usermodel.countDocuments({ role: "manager" });
+      if (managerCount >= 10) {
+        return errorResponse(
+          res,
+          400,
+          "Cannot add more managers. Limit reached (10)."
+        );
+      }
+    }
+
+    // 🔹 Check Recruiter Limit (Max 100)
+    if (role === "recruiter") {
+      const recruiterCount = await usermodel.countDocuments({
+        role: "recruiter",
+      });
+      if (recruiterCount >= 100) {
+        return errorResponse(
+          res,
+          400,
+          "Cannot add more recruiters. Limit reached (100)."
+        );
+      }
+    }
+
+    // 🔹 Hash Password
     const hashedpassword = bcryptPassword(password);
 
-    const newUser = await usermodel.create({
+    // 🔹 Create User
+    const newUser = new usermodel({
       mobile,
       firstname,
       lastname,
       email,
       approved,
       password: hashedpassword,
-      approved,
       role,
     });
 
     await newUser.save();
-
-    return successResponse(res, "Successfully signed up");
+    return successResponse(res, "Successfully signed up", newUser);
   } catch (error) {
     console.log("Error:", error.message);
     return errorResponse(res, 400, error.message);

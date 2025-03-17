@@ -41,13 +41,19 @@ userSchema.pre("findOneAndUpdate", function (next) {
 });
 
 // Prevent more than 10 Managers & 100 Recruiters
-userSchema.pre("save", async function (next) {
+userSchema.pre("validate", async function (next) {
   if (this.role === "manager") {
     const count = await usermodel.countDocuments({ role: "manager" });
-    if (count >= 10) {
+
+    if (count > 10) {
       return next(new Error("Cannot add more managers. Limit reached (10)."));
     }
+
+    if (count === 10) {
+      this.lastManagerSignup = true; // Flag the 10th manager
+    }
   }
+
   if (this.role === "recruiter") {
     const count = await usermodel.countDocuments({ role: "recruiter" });
     if (count >= 100) {
@@ -60,7 +66,7 @@ userSchema.pre("save", async function (next) {
 });
 
 // Admin account creation restriction
-userSchema.pre("save", async function (next) {
+userSchema.pre("validate", async function (next) {
   if (this.role === "Admin") {
     const count = await usermodel.countDocuments({ role: "Admin" });
     if (count > 0) {
