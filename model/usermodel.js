@@ -44,13 +44,13 @@ userSchema.pre("findOneAndUpdate", function (next) {
 userSchema.pre("save", async function (next) {
   if (this.role === "manager") {
     const count = await usermodel.countDocuments({ role: "manager" });
-    if (count > 9) {
+    if (count >= 10) {
       return next(new Error("Cannot add more managers. Limit reached (10)."));
     }
   }
   if (this.role === "recruiter") {
     const count = await usermodel.countDocuments({ role: "recruiter" });
-    if (count > 99) {
+    if (count >= 100) {
       return next(
         new Error("Cannot add more recruiters. Limit reached (100).")
       );
