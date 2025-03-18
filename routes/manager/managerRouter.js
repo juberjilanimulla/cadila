@@ -1,6 +1,7 @@
 import { Router } from "express";
 import managerjobpostingRouter from "./managerjobpostingRouter.js";
 import dashboradmanagerRouter from "./dashboardmanagerRouter.js";
+import recruitermanagerRouter from "./recruitermanagerRouter.js";
 
 const managerRouter = Router();
 

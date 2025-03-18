@@ -137,3 +137,6 @@ test*
 /uploads
 /logs.env
 .env
+
+#.json
+recruiterData.json
