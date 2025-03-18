@@ -12,7 +12,6 @@ recruitermanagerRouter.post("/create", createrecruiterHandler);
 recruitermanagerRouter.post("/udpate/:id", udpatereruiterHandler);
 recruitermanagerRouter.post("/delete/:id", deleterecruiterHandler);
 recruitermanagerRouter.post("/resetpassword", resetpasswordHandler);
-recruitermanagerRouter.post("/bulk", bulkcreaterecruitersHandler);
 
 export default recruitermanagerRouter;
 
@@ -90,12 +89,10 @@ async function createrecruiterHandler(req, res) {
       return errorResponse(res, 409, "User with this email already exists");
     }
 
-    const recruiterCount = await usermodel
-      .countDocuments({
-        role: "recruiter",
-      })
-      .lean();
-
+    // Check recruiter count before inserting
+    const recruiterCount = await usermodel.countDocuments({
+      role: "recruiter",
+    });
     if (recruiterCount >= 100) {
       return errorResponse(
         res,
@@ -108,7 +105,7 @@ async function createrecruiterHandler(req, res) {
     const hashedPassword = bcryptPassword(password);
 
     // Create recruiter
-    const newRecruiter = await usermodel.create({
+    const newRecruiter = new usermodel({
       firstname,
       lastname,
       email,
@@ -127,6 +124,24 @@ async function createrecruiterHandler(req, res) {
 
 async function udpatereruiterHandler(req, res) {
   try {
+    const { _id, ...updatedData } = req.body;
+    const options = { new: true };
+    if (
+      !updatedData.firstname ||
+      !updatedData.lastname ||
+      !updatedData.email ||
+      !updatedData.mobile
+    ) {
+      errorResponse(res, 404, "Some params are missing");
+      return;
+    }
+    const updated = await usermodel.findByIdAndUpdate(
+      _id,
+      updatedData,
+      options
+    );
+
+    successResponse(res, "success Updated", updated);
   } catch (error) {
     console.log("error", error);
     errorResponse(res, 500, "internal server error");
@@ -135,6 +150,15 @@ async function udpatereruiterHandler(req, res) {
 
 async function deleterecruiterHandler(req, res) {
   try {
+    const { _id } = req.body;
+    if (!_id) {
+      return errorResponse(res, 400, "some params are missing");
+    }
+    const user = await usermodel.findByIdAndDelete({ _id: _id });
+    if (!user) {
+      return errorResponse(res, 404, "user id not found");
+    }
+    successResponse(res, "Success");
   } catch (error) {
     console.log("error", error);
     errorResponse(res, 500, "internal server error");
@@ -143,53 +167,39 @@ async function deleterecruiterHandler(req, res) {
 
 async function resetpasswordHandler(req, res) {
   try {
-  } catch (error) {}
-}
+    const { email, password } = req.body;
+    //  Get the Admin's role from authentication middleware
+    const requestingUserRole = res.locals.role;
 
-async function bulkcreaterecruitersHandler(req, res) {
-  try {
-    const { recruiters } = req.body; // Expecting an array of recruiters
+    const userReset = await usermodel.findOne({ email });
 
-    // Ensure recruiters is an array and limit the count to 99
-    if (!Array.isArray(recruiters) || recruiters.length === 0) {
-      return errorResponse(
-        res,
-        400,
-        "Invalid input. Provide an array of recruiters."
-      );
+    if (!userReset) {
+      errorResponse(res, 400, "email id not found");
+      return;
     }
-    if (recruiters.length > 99) {
+    if (requestingUserRole !== "manager") {
       return errorResponse(
         res,
-        400,
-        "Cannot add more than 99 recruiters at a time."
+        403,
+        "Access denied. Only manager can reset passwords."
       );
     }
 
-    // Count existing recruiters
-    const existingCount = await usermodel.countDocuments({ role: "recruiter" });
-
-    // Check if adding new recruiters exceeds 99
-    if (existingCount + recruiters.length > 99) {
+    // 🔹 Admin should not reset their own password
+    if (userReset.role === "manager") {
       return errorResponse(
         res,
-        400,
-        `You can only add ${99 - existingCount} more recruiters.`
+        403,
+        "manager password cannot be reset by another manager."
       );
     }
 
-    // Add the role as "recruiter" to all entries
-    const recruiterData = recruiters.map((recruiter) => ({
-      ...recruiter,
-      role: "recruiter", // Ensuring role is always "recruiter"
-    }));
+    userReset.password = bcryptPassword(password);
+    await userReset.save({ validateBeforeSave: false });
 
-    // Insert recruiters in bulk
-    const createdRecruiters = await usermodel.insertMany(recruiterData);
-
-    successResponse(res, "Recruiters created successfully", createdRecruiters);
+    return successResponse(res, "Password reset successfully");
   } catch (error) {
-    console.log("Error:", error);
-    errorResponse(res, 500, "Internal server error");
+    console.log("error", error);
+    errorResponse(res, 500, "internal server error ");
   }
 }
