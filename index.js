@@ -14,7 +14,7 @@ import authRouter from "./routes/auth/authRouter.js";
 import adminRouter from "./routes/admin/adminRouter.js";
 import managerRouter from "./routes/manager/managerRouter.js";
 import recruiterRouter from "./routes/recruiter/recruiterRouter.js";
-import userRouter from "./routes/user/clientRouter.js";
+import userRouter from "./routes/user/userRouter.js";
 
 const app = express();
 const port = config.PORT;

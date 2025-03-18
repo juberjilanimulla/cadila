@@ -140,3 +140,6 @@ test*
 
 #.json
 recruiterData.json
+
+#pdf
+/pdfs

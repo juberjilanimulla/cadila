@@ -128,11 +128,11 @@ async function getalljobpostingHandler(req, res) {
 
 async function viewformjobpostingHandler(req, res) {
   try {
-    const recruiterId = res.locals.id; 
+    const recruiterId = res.locals.id;
     const jobpostings = await jobpostingmodel
       .find({ postedBy: recruiterId })
       .select("_id");
-
+    console.log("jobposting", jobpostings);
     if (!jobpostings.length) {
       return errorResponse(
         res,

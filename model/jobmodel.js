@@ -2,9 +2,9 @@ import { Schema, model } from "mongoose";
 
 const jobSchema = new Schema(
   {
-    jobpostingid: {
+    postedBy: {
       type: Schema.Types.ObjectId,
-      ref: "jobposting",
+      ref: "user",
     },
     jobtitle: String,
     name: String,
