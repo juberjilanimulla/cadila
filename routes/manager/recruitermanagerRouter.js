@@ -9,8 +9,8 @@ const recruitermanagerRouter = Router();
 
 recruitermanagerRouter.post("/getall", getallrecruiterHandler);
 recruitermanagerRouter.post("/create", createrecruiterHandler);
-recruitermanagerRouter.post("/udpate/:id", udpatereruiterHandler);
-recruitermanagerRouter.post("/delete/:id", deleterecruiterHandler);
+recruitermanagerRouter.post("/update", udpatereruiterHandler);
+recruitermanagerRouter.post("/delete", deleterecruiterHandler);
 recruitermanagerRouter.post("/resetpassword", resetpasswordHandler);
 
 export default recruitermanagerRouter;
@@ -60,7 +60,7 @@ async function getallrecruiterHandler(req, res) {
         : { createdAt: -1 }; // Default sorting by most recent
 
     // Fetch total count for pagination
-    const totalCount = await usermodel.countDocuments(query);
+    const totalCount = await usermodel.countDocuments(query).lean();
     const totalPages = Math.ceil(totalCount / limit);
 
     // Fetch recruiters

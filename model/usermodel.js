@@ -9,7 +9,7 @@ const userSchema = new Schema(
     password: { type: String, required: true },
     role: {
       type: String,
-      enum: ["Admin", "manager", "recruiter"],
+      enum: ["Admin", "manager", "recruiter", "user"],
       required: true,
     },
     approved: { type: Boolean, default: false }, // Admin/Manager approval system

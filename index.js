@@ -11,9 +11,10 @@ import {
   isAdminMiddleware,
 } from "./helpers/helperFunction.js";
 import authRouter from "./routes/auth/authRouter.js";
-import clientRouter from "./routes/client/clientRouter.js";
 import adminRouter from "./routes/admin/adminRouter.js";
 import managerRouter from "./routes/manager/managerRouter.js";
+import recruiterRouter from "./routes/recruiter/recruiterRouter.js";
+import userRouter from "./routes/user/clientRouter.js";
 
 const app = express();
 const port = config.PORT;
@@ -58,9 +59,10 @@ app.use((err, req, res, next) => {
 app.use("/api/upload", express.static(path.join("..", "uploads")));
 //routing
 app.use("/api/auth", authRouter);
-app.use("/api/client", clientRouter);
+app.use("/api/user", userRouter);
 app.use("/api/admin", authMiddleware, isAdminMiddleware, adminRouter);
 app.use("/api/manager", authMiddleware, managerRouter);
+app.use("/api/recruiter", authMiddleware, recruiterRouter);
 //production
 if (prod) {
   app.use("/", express.static(config.FRONTEND_PATH));
