@@ -133,6 +133,7 @@ async function viewformjobpostingHandler(req, res) {
       .find({ postedBy: recruiterId })
       .select("_id");
     console.log("jobposting", jobpostings);
+
     if (!jobpostings.length) {
       return errorResponse(
         res,
@@ -144,7 +145,7 @@ async function viewformjobpostingHandler(req, res) {
     const jobpostingIds = jobpostings.map((job) => job._id); // Extract job posting IDs
 
     // Find job applications linked to the recruiter's job postings
-    const jobApplications = await jobmodels.find({
+    const jobApplications = await jobpostingmodel.find({
       jobpostingId: { $in: jobpostingIds },
     });
 

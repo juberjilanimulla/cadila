@@ -5,6 +5,7 @@ import {
 } from "../../helpers/serverResponse.js";
 import jobmodels from "../../model/jobmodel.js";
 import cvpdfRouter from "./uploadcv.js";
+import jobpostingmodel from "../../model/jobpostingmodel.js";
 
 const jobRouter = Router();
 
@@ -18,7 +19,12 @@ async function createjobHandler(req, res) {
     if (!jobtitle || !name || !email || !mobile || !linkedinlink) {
       return errorResponse(res, 400, "some params are missing");
     }
+    const job = await jobpostingmodel.findOne({ jobtitle });
+    if (!job) {
+      return errorResponse(res, 404, "Job title not found");
+    }
     const params = {
+      jobid: job._id,
       jobtitle,
       name,
       email,
