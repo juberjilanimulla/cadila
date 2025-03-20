@@ -74,7 +74,7 @@ export function authMiddleware(req, res, next) {
   try {
     const decoded = jwt.verify(encoded_token, secrectKey);
 
-    if (!decoded.role || !decoded.email) {
+    if (!decoded.id || !decoded.role || !decoded.email) {
       console.log("Not authorized");
       return res.status(401).json("Unauthorize user");
     }

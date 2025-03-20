@@ -6,6 +6,7 @@ const jobpostingSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "user",
     },
+    
     jobtitle: String,
     experience: String,
     salary: String,

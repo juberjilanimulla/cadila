@@ -4,20 +4,21 @@ import {
   errorResponse,
 } from "../../helpers/serverResponse.js";
 import jobpostingmodel from "../../model/jobpostingmodel.js";
+import jobapplicantsmodel from "../../model/jobapplicantsmodel.js";
 
 const jobpostingrecruiterRouter = Router();
 
 jobpostingrecruiterRouter.post("/create", createjobpostingHandler);
 jobpostingrecruiterRouter.post("/update", updatejobpostingHandler);
 jobpostingrecruiterRouter.post("/getall", getalljobpostingHandler);
-jobpostingrecruiterRouter.get("/viewjobform", viewformjobpostingHandler);
+jobpostingrecruiterRouter.get("/viewjobform", getjobapplicationsHandler);
 
 export default jobpostingrecruiterRouter;
 
 async function createjobpostingHandler(req, res) {
   try {
     const role = res.locals && res.locals.role;
-    const recruiterId = res.locals.id;
+    const recruiterid = res.locals.id;
     if (role !== "recruiter") {
       return errorResponse(res, 403, "Unauthorized access - recruiter only");
     }
@@ -32,7 +33,7 @@ async function createjobpostingHandler(req, res) {
       salary,
       location,
       jobdescription,
-      postedBy: recruiterId,
+      postedBy: recruiterid,
     };
     const jobposting = await jobpostingmodel.create(params);
     if (!jobposting) {
@@ -126,32 +127,32 @@ async function getalljobpostingHandler(req, res) {
   }
 }
 
-async function viewformjobpostingHandler(req, res) {
+async function getjobapplicationsHandler(req, res) {
   try {
-    const recruiterId = res.locals.id;
-    const jobpostings = await jobpostingmodel
-      .find({ postedBy: recruiterId })
-      .select("_id");
-    console.log("jobposting", jobpostings);
+    const recruiterid = res.locals.id;
+    const role = res.locals.role;
 
-    if (!jobpostings.length) {
-      return errorResponse(
-        res,
-        404,
-        "No job postings found for this recruiter"
-      );
+    if (role !== "recruiter") {
+      return errorResponse(res, 403, "Unauthorized access - recruiters only");
     }
 
-    const jobpostingIds = jobpostings.map((job) => job._id); // Extract job posting IDs
+    const { jobid } = req.query; // Optional filtering by job ID
 
-    // Find job applications linked to the recruiter's job postings
-    const jobApplications = await jobpostingmodel.find({
-      jobpostingId: { $in: jobpostingIds },
-    });
+    let query = { recruiterid };
 
-    successResponse(res, "Success", { jobApplications });
+    if (jobid) {
+      query.jobid = jobid; // If jobid is provided, filter by it
+    }
+
+    const applications = await jobapplicantsmodel
+      .find(query)
+      .populate("jobid", "jobtitle location") // Populate job details
+      .populate("applicantid", "firstname lastname email") // Populate applicant details
+      .select("-__v");
+
+    successResponse(res, "Applications retrieved successfully", applications);
   } catch (error) {
     console.log("error", error);
-    errorResponse(res, 500, "internal server error");
+    errorResponse(res, 500, "Internal server error");
   }
 }
