@@ -254,3 +254,20 @@ export async function getnumber(id) {
 //     return null;
 //   }
 // }
+
+export function generatecaptcha() {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let captcha = "";
+  const usedChars = new Set();
+
+  while (captcha.length < 8) {
+    const randomChar = chars.charAt(Math.floor(Math.random() * chars.length));
+
+    if (!usedChars.has(randomChar)) {
+      captcha += randomChar;
+      usedChars.add(randomChar);
+    }
+  }
+  return captcha;
+}
