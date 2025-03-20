@@ -68,7 +68,7 @@ async function getalljobpostHandler(req, res) {
     // Apply search
     if (search.trim()) {
       const searchRegex = new RegExp(search.trim(), "i");
-      const searchFields = ["jobtitle", "jobdescription", "location"]; // Adjust based on job schema fields
+      const searchFields = ["jobtitle", "jobdescription", "location", "salary"]; // Adjust based on job schema fields
       const searchConditions = searchFields.map((field) => ({
         [field]: { $regex: searchRegex },
       }));
