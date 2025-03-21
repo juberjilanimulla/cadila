@@ -80,6 +80,8 @@ app.use("*", (req, res) => {
   });
 });
 
+//email sender
+
 //database
 dbConnect()
   .then(() => {

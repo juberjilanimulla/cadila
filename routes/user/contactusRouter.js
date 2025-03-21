@@ -17,6 +17,7 @@ async function createcontactusHandler(req, res) {
     if (!firstname || !lastname || !email || !mobile || !message) {
       return errorResponse(res, 400, "some params are missing");
     }
+
     const params = { firstname, lastname, email, mobile, message };
     const contactus = await contactmodel.create(params);
     successResponse(res, "success", contactus);
