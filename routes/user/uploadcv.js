@@ -9,8 +9,7 @@ import {
 } from "../../helpers/serverResponse.js";
 import { getnumber } from "../../helpers/helperFunction.js";
 import fs from "fs";
-import jobmodels from "../../model/jobmodel.js";
-
+import jobapplicantsmodel from "../../model/jobapplicantsmodel.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -54,7 +53,7 @@ const pdfUpload = multer({
   fileFilter: (req, file, cb) => {
     checkPdfFileType(file, cb);
   },
-}).single("pdf");
+}).single("resume");
 
 const cvpdfRouter = Router();
 
@@ -70,9 +69,9 @@ cvpdfRouter.post("/:id", (req, res) => {
     try {
       const pdf = req.file.filename;
       const contactId = req.params.id;
-      const updatedContactcv = await jobmodels.findByIdAndUpdate(
+      const updatedContactcv = await jobapplicantsmodel.findByIdAndUpdate(
         contactId,
-        { pdf: pdf },
+        { resume: pdf },
         { new: true }
       );
       if (!updatedContactcv) {

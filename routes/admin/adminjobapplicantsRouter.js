@@ -8,6 +8,7 @@ import jobapplicantsmodel from "../../model/jobapplicantsmodel.js";
 const adminjobapplicantsRouter = Router();
 
 adminjobapplicantsRouter.post("/getall", getalljobapplicantsHandler);
+adminjobapplicantsRouter.post("/delete", deletejobapplicantsHandler);
 
 export default adminjobapplicantsRouter;
 
@@ -40,7 +41,8 @@ async function getalljobapplicantsHandler(req, res) {
 
     // Apply search
     if (search.trim()) {
-      const searchRegex = new RegExp(search.trim(), "i");
+      // const searchRegex = new RegExp(search.trim(), "i");
+      const searchRegex = new RegExp("\\b" + search.trim(), "i");
       const searchConditions = [
         { name: { $regex: searchRegex } },
         { email: { $regex: searchRegex } },
@@ -127,5 +129,22 @@ async function getalljobapplicantsHandler(req, res) {
   } catch (error) {
     console.error("Error fetching job applicants:", error);
     errorResponse(res, 500, "Internal server error");
+  }
+}
+
+async function deletejobapplicantsHandler(req, res) {
+  try {
+    const { _id } = req.body;
+    if (!_id) {
+      return errorResponse(res, 400, "some params are missing");
+    }
+    const contactus = await talentmodel.findByIdAndDelete({ _id: _id });
+    if (!contactus) {
+      return errorResponse(res, 404, "contactus id not found");
+    }
+    successResponse(res, "Success");
+  } catch (error) {
+    console.log("error", error);
+    errorResponse(res, 500, "internal server error");
   }
 }

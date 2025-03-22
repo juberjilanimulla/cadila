@@ -18,7 +18,7 @@ const jobapplicantSchema = new Schema(
     email: { type: String },
     mobile: { type: String },
     yearofexperience: { type: String },
-    coverletter: { type: String, default: "" },
+    resume: { type: String, default: "" },
     status: {
       type: String,
       enum: ["pending", "reviewed", "accepted", "rejected"],
