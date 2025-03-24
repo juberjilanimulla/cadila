@@ -67,11 +67,11 @@ cvpdfRouter.post("/:id", (req, res) => {
     }
 
     try {
-      const pdf = req.file.filename;
+      const resume = req.file.filename;
       const contactId = req.params.id;
       const updatedContactcv = await jobapplicantsmodel.findByIdAndUpdate(
         contactId,
-        { resume: pdf },
+        { resume: resume },
         { new: true }
       );
       if (!updatedContactcv) {

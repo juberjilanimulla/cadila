@@ -138,7 +138,7 @@ async function deletejobapplicantsHandler(req, res) {
     if (!_id) {
       return errorResponse(res, 400, "some params are missing");
     }
-    const contactus = await talentmodel.findByIdAndDelete({ _id: _id });
+    const contactus = await jobapplicantsmodel.findByIdAndDelete({ _id: _id });
     if (!contactus) {
       return errorResponse(res, 404, "contactus id not found");
     }
