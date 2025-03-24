@@ -5,6 +5,7 @@ import {
   generateAccessToken,
   getSessionData,
   validatetoken,
+  sendEmailOTP,
 } from "../../helpers/helperFunction.js";
 import {
   errorResponse,
@@ -17,7 +18,7 @@ const authRouter = Router();
 
 authRouter.post("/signin", signinHandler);
 authRouter.post("/forgotpassword", forgetpasswordHandler);
-// authRouter.post("/resetpassword", resetpasswordHandler);
+authRouter.post("/resetpassword", resetpasswordHandler);
 authRouter.post("/publictoken", refreshtokenHandler);
 authRouter.post("/signup", signupHandler);
 
@@ -79,7 +80,7 @@ async function forgetpasswordHandler(req, res) {
         "Too many requests, please try again later"
       );
     }
-    // usersotp.tokenotp = await getEmailOTP(email);
+    usersotp.tokenotp = await sendEmailOTP(email);
     await usersotp.save();
 
     successResponse(res, "OTP successfully sent");
@@ -253,5 +254,27 @@ async function signupHandler(req, res) {
   } catch (error) {
     console.log("Error:", error.message);
     return errorResponse(res, 400, error.message);
+  }
+}
+
+async function resetpasswordHandler(req, res) {
+  try {
+    const { email, tokenotp, password } = req.body;
+    const userReset = await usermodel.findOne({ email });
+
+    if (!userReset) {
+      errorResponse(res, 400, "email id not found");
+      return;
+    }
+
+    if (tokenotp != userReset.tokenotp) {
+      errorResponse(res, 400, "invalid otp");
+      return;
+    }
+    userReset.password = bcryptPassword(password);
+    userReset.save();
+    successResponse(res, "password set successfully");
+  } catch (error) {
+    console.log("error", error);
   }
 }

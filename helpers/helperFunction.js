@@ -2,11 +2,12 @@ import { errorResponse } from "./serverResponse.js";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt, { compare } from "bcrypt";
-// import axios from "axios";
-// import config from "../config.js";
+import axios from "axios";
+import config from "../config.js";
 import crypto from "crypto";
 import usermodel from "../model/usermodel.js";
 import dotenv from "dotenv";
+import Mailjet from "node-mailjet";
 
 dotenv.config();
 const secrectKey = crypto.randomBytes(48).toString("hex");
@@ -201,60 +202,38 @@ export async function getnumber(id) {
   return id;
 }
 
-// export async function getEmailOTP(email) {
-//   try {
-//     const apikey = config.APIKEY;
 
-//     const emailerUrl = "https://emailer.firstclusive.com";
 
-//     const resp = await axios.post(emailerUrl, {
-//       apikey,
-//       email,
-//     });
-//     return resp.data.otp;
-//   } catch (error) {
-//     console.log("otp error", error);
-//     return null;
-//   }
-// }
+export async function sendEmailOTP(email) {
+  try {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-// dotenv.config();
+    const mj = Mailjet.apiConnect(
+      process.env.MAILJET_API_KEY,
+      process.env.MAILJET_SECRET_KEY
+    );
 
-// Initialize Brevo client
-// export async function getEmailOTP(email) {
-//   try {
-//     const apikey = config.EMAIL_APIKEY; // Use Brevo API Key from .env
+    const request = await mj.post("send", { version: "v3.1" }).request({
+      Messages: [
+        {
+          From: {
+            Email: process.env.MAILJET_SENDER,
+            Name: "Firstclusive Branding",
+          },
+          To: [{ Email: email }],
+          Subject: "Your OTP Code to Reset Password",
+          HTMLPart: `<p>Your OTP code is <strong>${otp}</strong>. It will expire in 10 minutes.</p>`,
+        },
+      ],
+    });
 
-//     const brevoUrl = "https://api.brevo.com/v3/smtp/email"; // Brevo API endpoint
-
-//     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate 6-digit OTP
-
-//     // Fix: Properly define emailData
-//     const emailData = {
-//       sender: {
-//         email: process.env.EMAIL_SENDER,
-//         name: "firstclusive branding",
-//       }, // Use a verified sender email
-//       to: [{ email: email }],
-//       subject: "Your OTP Code to Reset Password",
-//       htmlContent: `<p>Your OTP code is <strong>${otp}</strong>. It expires in 10 minutes.</p>`,
-//     };
-
-//     const headers = {
-//       "api-key": apikey,
-//       "Content-Type": "application/json",
-//       Accept: "application/json",
-//     };
-
-//     const resp = await axios.post(brevoUrl, emailData, { headers });
-
-//     return otp; // Return OTP for storing in the database
-//   } catch (error) {
-//     console.error("OTP Email Error:", error.response?.data || error.message);
-//     return null;
-//   }
-// }
-
+    console.log("OTP email sent to:", request.body.Messages[0].To[0].Email);
+    return otp;
+  } catch (error) {
+    console.error("Mailjet OTP Error:", error.response?.body || error.message);
+    return null;
+  }
+}
 export function generatecaptcha() {
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
