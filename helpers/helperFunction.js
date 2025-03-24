@@ -202,8 +202,6 @@ export async function getnumber(id) {
   return id;
 }
 
-
-
 export async function sendEmailOTP(email) {
   try {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -221,8 +219,16 @@ export async function sendEmailOTP(email) {
             Name: "Firstclusive Branding",
           },
           To: [{ Email: email }],
-          Subject: "Your OTP Code to Reset Password",
-          HTMLPart: `<p>Your OTP code is <strong>${otp}</strong>. It will expire in 10 minutes.</p>`,
+          Subject: "Verify your email",
+          TextPart: `Hi,
+
+This is to inform you that you have registered successfully with Firstclusive Branding.
+
+Here is your OTP to verify your email:
+${otp}
+
+Regards,
+Firstclusive Team`,
         },
       ],
     });
@@ -234,6 +240,7 @@ export async function sendEmailOTP(email) {
     return null;
   }
 }
+
 export function generatecaptcha() {
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";

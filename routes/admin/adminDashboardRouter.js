@@ -11,7 +11,7 @@ adminDashboardRouter.post("/approve/:id", approveHandler);
 adminDashboardRouter.post("/reject/:id", rejectHandler);
 adminDashboardRouter.post("/resetpassword", resetpasswordHandler);
 adminDashboardRouter.post("/getallusers", getallusersHandler);
-
+adminDashboardRouter.post("/delete", admindeleteuserHandler);
 export default adminDashboardRouter;
 
 async function approveHandler(req, res) {
@@ -192,3 +192,4 @@ async function getallusersHandler(req, res) {
     errorResponse(res, 500, "internal server error");
   }
 }
+
