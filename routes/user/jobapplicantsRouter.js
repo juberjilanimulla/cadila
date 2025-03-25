@@ -7,6 +7,7 @@ import {
 import cvpdfRouter from "./uploadcv.js";
 import jobapplicantsmodel from "../../model/jobapplicantsmodel.js";
 import jobpostingmodel from "../../model/jobpostingmodel.js";
+import jobmodels from "../../model/jobmodel.js";
 
 const jobapplicantsRouter = Router();
 

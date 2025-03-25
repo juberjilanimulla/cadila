@@ -18,7 +18,7 @@ export default adminjobpostingRouter;
 async function createjobpostHandler(req, res) {
   try {
     const role = res.locals && res.locals.role;
-
+    const adminid = res.locals.id;
     if (role !== "Admin") {
       return errorResponse(res, 403, "Unauthorized access - Admins only");
     }
@@ -34,6 +34,7 @@ async function createjobpostHandler(req, res) {
       location,
       jobdescription,
       approved: true,
+      postedBy: adminid,
     };
     const jobposting = await jobpostingmodel.create(params);
     if (!jobposting) {
@@ -87,16 +88,46 @@ async function getalljobpostHandler(req, res) {
           }, {})
         : { createdAt: -1 }; // Default sorting by most recent jobs
 
+    // Aggregation pipeline
+    const pipeline = [
+      { $match: query }, // Match the query conditions
+      { $sort: sortBy }, // Apply sorting
+      { $skip: skip }, // Skip for pagination
+      { $limit: limit }, // Limit for pagination
+      {
+        $lookup: {
+          from: "users", // Replace with your user collection name
+          localField: "postedBy", // Field in jobpostingmodel
+          foreignField: "_id", // Field in user model
+          as: "userDetails", // Name for joined user details
+        },
+      },
+      {
+        $unwind: "$userDetails",
+      },
+      {
+        $project: {
+          _id: 1,
+          jobtitle: 1,
+          experience: 1,
+          salary: 1,
+          location: 1,
+          jobdescription: 1,
+          approved: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          email: "$userDetails.email", // Add email from user details
+          role: "$userDetails.role", // Include the role of the user
+        },
+      },
+    ];
+
+    // Execute aggregation pipeline
+    const jobs = await jobpostingmodel.aggregate(pipeline);
+
     // Fetch total count for pagination
     const totalCount = await jobpostingmodel.countDocuments(query);
     const totalPages = Math.ceil(totalCount / limit);
-
-    // Fetch paginated jobs
-    const jobs = await jobpostingmodel
-      .find(query)
-      .sort(sortBy)
-      .skip(skip)
-      .limit(limit);
 
     successResponse(res, "Success", { jobs, totalPages });
   } catch (error) {

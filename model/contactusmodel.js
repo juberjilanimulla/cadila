@@ -7,6 +7,10 @@ const contactSchema = new Schema(
     mobile: Number,
     email: String,
     message: String,
+    teamaccpected: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true, versionKey: false }
 );

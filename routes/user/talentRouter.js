@@ -4,6 +4,7 @@ import {
   errorResponse,
   successResponse,
 } from "../../helpers/serverResponse.js";
+import { sendMailToTalent } from "../../helpers/helperFunction.js";
 
 const talentRouter = Router();
 
@@ -18,6 +19,7 @@ async function createtalentHandler(req, res) {
     }
     const params = { companyname, email, jobrole, jobdescription, mobile };
     const talent = await talentmodel.create(params);
+    await sendMailToTalent(params);
     successResponse(res, "success", talent);
   } catch (error) {
     console.log("error", error);

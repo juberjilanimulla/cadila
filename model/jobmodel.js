@@ -2,7 +2,6 @@ import { Schema, model } from "mongoose";
 
 const jobSchema = new Schema(
   {
-   
     jobtitle: String,
     name: String,
     email: String,
