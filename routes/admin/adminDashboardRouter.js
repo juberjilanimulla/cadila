@@ -4,7 +4,10 @@ import {
   successResponse,
 } from "../../helpers/serverResponse.js";
 import usermodel from "../../model/usermodel.js";
-import { bcryptPassword } from "../../helpers/helperFunction.js";
+import {
+  bcryptPassword,
+  sendUserApprovalStatusEmail,
+} from "../../helpers/helperFunction.js";
 const adminDashboardRouter = Router();
 
 adminDashboardRouter.post("/approve/:id", approveHandler);
@@ -41,6 +44,11 @@ async function approveHandler(req, res) {
     if (!updatedUser) {
       return errorResponse(res, 404, "User not found");
     }
+    await sendUserApprovalStatusEmail({
+      email: updatedUser.email,
+      firstname: updatedUser.firstname,
+      approved: true,
+    });
 
     return successResponse(
       res,
@@ -80,6 +88,11 @@ async function rejectHandler(req, res) {
     if (!updatedUser) {
       return errorResponse(res, 404, "User not found");
     }
+    await sendUserApprovalStatusEmail({
+      email: updatedUser.email,
+      firstname: updatedUser.firstname,
+      approved: false,
+    });
 
     return successResponse(
       res,

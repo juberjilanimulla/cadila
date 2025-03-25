@@ -56,8 +56,8 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Internal server error" });
 });
 
-app.use("/api/pdf", authMiddleware,express.static(path.join("..","pdfs")));
-
+// app.use("/api/upload", authMiddleware, express.static(path.join("..", "pdfs")));
+app.use("/api/upload", authMiddleware, express.static(path.join("..", "pdfs")));
 //routing
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);

@@ -4,6 +4,7 @@ import {
   successResponse,
 } from "../../helpers/serverResponse.js";
 import contactmodel from "../../model/contactusmodel.js";
+import { sendContactFormEmail } from "../../helpers/helperFunction.js";
 
 const contactusRouter = Router();
 
@@ -20,6 +21,7 @@ async function createcontactusHandler(req, res) {
 
     const params = { firstname, lastname, email, mobile, message };
     const contactus = await contactmodel.create(params);
+    await sendContactFormEmail(params);
     successResponse(res, "success", contactus);
   } catch (error) {
     console.log("error", error);

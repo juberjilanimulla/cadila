@@ -222,7 +222,7 @@ export async function sendEmailOTP(email) {
           Subject: "Verify your email",
           TextPart: `Hi,
 
-This is to inform you that you have registered successfully with Firstclusive Branding.
+This is to inform you that you have otp successfully with Firstclusive Branding.
 
 Here is your OTP to verify your email:
 ${otp}
@@ -233,7 +233,6 @@ Firstclusive Team`,
       ],
     });
 
-    console.log("OTP email sent to:", request.body.Messages[0].To[0].Email);
     return otp;
   } catch (error) {
     console.error("Mailjet OTP Error:", error.response?.body || error.message);
@@ -256,4 +255,98 @@ export function generatecaptcha() {
     }
   }
   return captcha;
+}
+
+export async function sendContactFormEmail({
+  firstname,
+  lastname,
+  email,
+  mobile,
+  message,
+}) {
+  try {
+    const mj = Mailjet.apiConnect(
+      process.env.MAILJET_API_KEY,
+      process.env.MAILJET_SECRET_KEY
+    );
+
+    const request = await mj.post("send", { version: "v3.1" }).request({
+      Messages: [
+        {
+          From: {
+            Email: process.env.MAILJET_SENDER,
+            Name: "Firstclusive Contact Form",
+          },
+          To: [
+            {
+              Email: process.env.ADMIN_JU, // Admin email to receive alerts
+              Name: "Firstclusive Admin",
+            },
+          ],
+          Subject: "New Contact Form Submission",
+          HTMLPart: `
+            <h3>🚨 New Contact Form Submission Received</h3>
+            <p><strong>Name:</strong> ${firstname} ${lastname}</p>
+            <p><strong>Email:</strong> ${email}</p>
+            <p><strong>Mobile:</strong> ${mobile}</p>
+            <p><strong>Message:</strong><br/> ${message}</p>
+            <br/>
+            <p style="font-size: 13px; color: #888;">You received this email because someone filled the contact form on the Firstclusive website.</p>
+          `,
+        },
+      ],
+    });
+
+    return true;
+  } catch (error) {
+    console.error(
+      "Mailjet Contact Email Error:",
+      error.response?.body || error.message
+    );
+    return false;
+  }
+}
+
+export async function sendUserApprovalStatusEmail({
+  email,
+  firstname,
+  approved,
+}) {
+  try {
+    const mj = Mailjet.apiConnect(
+      process.env.MAILJET_API_KEY,
+      process.env.MAILJET_SECRET_KEY
+    );
+
+    const subject = approved
+      ? "✅ You're Approved by Admin!"
+      : "❌ Your Request Was Rejected";
+
+    const message = approved
+      ? `<p>Hi ${firstname},</p><p>We’re happy to let you know that your account has been <strong>approved</strong> by our admin team. You may now proceed with accessing the dashboard.</p>`
+      : `<p>Hi ${firstname},</p><p>We regret to inform you that your registration request was <strong>rejected</strong> by our admin team.</p>`;
+
+    await mj.post("send", { version: "v3.1" }).request({
+      Messages: [
+        {
+          From: {
+            Email: process.env.MAILJET_SENDER,
+            Name: "Firstclusive Admin",
+          },
+          To: [{ Email: email }],
+          Subject: subject,
+          HTMLPart: `
+            ${message}
+            <br/>
+            <p>Regards,<br/>Firstclusive Team</p>
+          `,
+        },
+      ],
+    });
+  } catch (error) {
+    console.error(
+      "Mailjet Notification Email Error:",
+      error.response?.body || error.message
+    );
+  }
 }

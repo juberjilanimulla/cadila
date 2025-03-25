@@ -31,7 +31,7 @@ function checkPdfFileType(file, cb) {
 const pdfStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = path.join(__dirname, "../../pdfs");
-    fs.mkdirSync(uploadPath, { recursive: true });
+    fs.mkdirSync(uploadPath, { recursive: true }); //ensure directory exists
     cb(null, uploadPath);
   },
   filename: async (req, file, cb) => {
@@ -41,6 +41,7 @@ const pdfStorage = multer.diskStorage({
       const id = Math.floor(Math.random() * 900000) + 1000;
       const ext = path.extname(file.originalname);
       const filename = `${pdfnumber}__${id}${ext}`;
+
       cb(null, filename);
     } catch (error) {
       cb(error);
