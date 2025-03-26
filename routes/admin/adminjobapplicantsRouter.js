@@ -109,10 +109,9 @@ async function getalljobapplicantsHandler(req, res) {
           email: 1,
           mobile: 1,
           yearofexperience: 1,
-          coverletter: 1,
-          recruitername: {
-            $concat: ["$recruiter.firstname", " ", "$recruiter.lastname"],
-          },
+          resume: 1,
+          recruiteremail: "$recruiter.email",
+          recruiterrole: "$recruiter.role",
         },
       },
       { $sort: sortBy },

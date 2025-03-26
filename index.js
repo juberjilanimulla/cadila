@@ -57,13 +57,14 @@ app.use((err, req, res, next) => {
 });
 
 // app.use("/api/upload", authMiddleware, express.static(path.join("..", "pdfs")));
-app.use("/api/upload", authMiddleware, express.static(path.join("..", "pdfs")));
+
 //routing
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/admin", authMiddleware, isAdminMiddleware, adminRouter);
 app.use("/api/manager", authMiddleware, managerRouter);
 app.use("/api/recruiter", authMiddleware, recruiterRouter);
+app.use("/api/pdf", authMiddleware, express.static("./pdfs"));
 //production
 if (prod) {
   app.use("/", express.static(config.FRONTEND_PATH));
