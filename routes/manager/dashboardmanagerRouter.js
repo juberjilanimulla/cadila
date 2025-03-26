@@ -168,13 +168,13 @@ async function getalltalentHandler(req, res) {
     const totalPages = Math.ceil(totalCount / limit);
 
     // Fetch paginated talent
-    const talent = await talentmodel
+    const talenthire = await talentmodel
       .find(query)
       .sort(sortBy)
       .skip(skip)
       .limit(limit);
 
-    successResponse(res, "Success", { talent, totalPages });
+    successResponse(res, "Success", { talenthire, totalPages });
   } catch (error) {
     console.log("error", error);
     errorResponse(res, 500, "Internal server error");

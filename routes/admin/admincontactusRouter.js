@@ -58,13 +58,13 @@ async function getallcontactusHandler(req, res) {
     const totalPages = Math.ceil(totalCount / limit);
 
     // Fetch paginated jobs
-    const contact = await contactmodel
+    const contacts = await contactmodel
       .find(query)
       .sort(sortBy)
       .skip(skip)
       .limit(limit);
 
-    successResponse(res, "Success", { contact, totalPages });
+    successResponse(res, "Success", { contacts, totalPages });
   } catch (error) {
     console.log("error", error);
     errorResponse(res, 500, "Internal server error");

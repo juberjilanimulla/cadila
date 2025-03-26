@@ -77,7 +77,7 @@ async function getalljobpostingHandler(req, res) {
   try {
     const { pageno = 0, filterBy = {}, sortby = {}, search = "" } = req.body;
 
-    const limit = 20;
+    const limit = 10;
     const skip = pageno * limit;
 
     let query = { postedBy: res.locals.id };
@@ -150,7 +150,19 @@ async function getjobapplicationsHandler(req, res) {
       .populate("applicantid", "firstname lastname email") // Populate applicant details
       .select("-__v");
 
-    successResponse(res, "Applications retrieved successfully", applications);
+    const transformedApplications = applications.map((application) => {
+      const { jobid, ...rest } = application.toObject();
+      return {
+        ...rest,
+        jobtitle: jobid?.jobtitle,
+        location: jobid?.location,
+      };
+    });
+    successResponse(
+      res,
+      "Applications retrieved successfully",
+      transformedApplications
+    );
   } catch (error) {
     console.log("error", error);
     errorResponse(res, 500, "Internal server error");

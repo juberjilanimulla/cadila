@@ -112,6 +112,7 @@ async function getalljobapplicantsHandler(req, res) {
           resume: 1,
           recruiteremail: "$recruiter.email",
           recruiterrole: "$recruiter.role",
+          createdAt: 1,
         },
       },
       { $sort: sortBy },

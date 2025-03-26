@@ -275,23 +275,23 @@ export async function sendContactFormEmail({
         {
           From: {
             Email: process.env.MAILJET_SENDER,
-            Name: "Firstclusive Contact Form",
+            Name: "Cadila Contact Form",
           },
           To: [
             {
               Email: process.env.ADMIN_JU, // Admin email to receive alerts
-              Name: "Firstclusive Admin",
+              Name: "Cadila Admin",
             },
           ],
           Subject: "New Contact Form Submission",
           HTMLPart: `
-            <h3>🚨 New Contact Form Submission Received</h3>
+            <h3> New Contact Form Submission Received</h3>
             <p><strong>Name:</strong> ${firstname} ${lastname}</p>
             <p><strong>Email:</strong> ${email}</p>
             <p><strong>Mobile:</strong> ${mobile}</p>
             <p><strong>Message:</strong><br/> ${message}</p>
             <br/>
-            <p style="font-size: 13px; color: #888;">You received this email because someone filled the contact form on the Firstclusive website.</p>
+           
           `,
         },
       ],
@@ -319,8 +319,8 @@ export async function sendUserApprovalStatusEmail({
     );
 
     const subject = approved
-      ? "✅ You're Approved by Admin!"
-      : "❌ Your Request Was Rejected";
+      ? " You're Approved by Admin!"
+      : " Your Request Was Rejected";
 
     const message = approved
       ? `<p>Hi ${firstname},</p><p>We’re happy to let you know that your account has been <strong>approved</strong> by our admin team. You may now proceed with accessing the dashboard.</p>`
