@@ -106,7 +106,7 @@ async function getalljobpostHandler(req, res) {
   try {
     const { pageno = 0, filterBy = {}, sortby = {}, search = "" } = req.body;
 
-    const limit = 11; // Number of items per page
+    const limit = 10; // Number of items per page
     const skip = pageno * limit;
 
     // Base query for jobs

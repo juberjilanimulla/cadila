@@ -12,18 +12,20 @@ import Mailjet from "node-mailjet";
 dotenv.config();
 const secrectKey = crypto.randomBytes(48).toString("hex");
 
-export function generateAccessToken(id, email, role) {
+export function generateAccessToken(id, email, role, firstname) {
   const sessionid = createSession(id);
   const encoded_tokenPayload = {
     id,
     email,
     role,
+    firstname,
   };
   const public_tokenPayload = {
     id,
     email,
     role,
     sessionid,
+    firstname,
   };
   const encoded_token = jwt.sign(encoded_tokenPayload, secrectKey, {
     expiresIn: "2h",
