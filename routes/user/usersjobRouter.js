@@ -13,7 +13,9 @@ export default usersjobRouter;
 
 async function getalljobsHandler(req, res) {
   try {
-    const jobs = await jobpostingmodel.find({ approved: true });
+    const jobs = await jobpostingmodel
+      .find({ approved: true })
+      .sort("-createdAt");
     if (!jobs) {
       return errorResponse(res, 404, "jobs not found");
     }

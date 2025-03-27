@@ -14,12 +14,27 @@ export default contactusRouter;
 
 async function createcontactusHandler(req, res) {
   try {
-    const { firstname, lastname, email, mobile, message } = req.body;
-    if (!firstname || !lastname || !email || !mobile || !message) {
+    const { firstname, lastname, email, mobile, message, termsaccepted } =
+      req.body;
+    if (
+      !firstname ||
+      !lastname ||
+      !email ||
+      !mobile ||
+      !message ||
+      !termsaccepted
+    ) {
       return errorResponse(res, 400, "some params are missing");
     }
 
-    const params = { firstname, lastname, email, mobile, message };
+    const params = {
+      firstname,
+      lastname,
+      email,
+      mobile,
+      message,
+      termsaccepted,
+    };
     const contactus = await contactmodel.create(params);
     await sendContactFormEmail(params);
     successResponse(res, "success", contactus);

@@ -190,6 +190,7 @@ async function getallusersHandler(req, res) {
 
     // Fetch total count for pagination
     const totalCount = await usermodel.countDocuments(query);
+
     const totalPages = Math.ceil(totalCount / limit);
 
     // Fetch users
@@ -198,7 +199,7 @@ async function getallusersHandler(req, res) {
       .sort(sortBy)
       .skip(skip)
       .limit(limit);
-
+ 
     successResponse(res, "Success", { users, totalPages });
   } catch (error) {
     console.log("error", error);

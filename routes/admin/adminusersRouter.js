@@ -8,7 +8,7 @@ import { bcryptPassword } from "../../helpers/helperFunction.js";
 const adminusersRouter = Router();
 
 adminusersRouter.post("/create", admincreateuserHandler);
-adminusersRouter.post("/update", adminudpateuserHandler);
+adminusersRouter.post("/update", adminupdateuserHandler);
 adminusersRouter.post("/delete", admindeleteuserHandler);
 export default adminusersRouter;
 
@@ -74,7 +74,7 @@ async function admincreateuserHandler(req, res) {
       mobile,
       password: hashedPassword,
       role,
-      approved,
+      approved: true,
     });
 
     await newUser.save();
@@ -86,29 +86,46 @@ async function admincreateuserHandler(req, res) {
   }
 }
 
-async function adminudpateuserHandler(req, res) {
+async function adminupdateuserHandler(req, res) {
   try {
-    const { _id, ...updatedData } = req.body;
+    const { _id, email, mobile, ...updatedData } = req.body;
     const options = { new: true };
-    if (
-      !updatedData.firstname ||
-      !updatedData.lastname ||
-      !updatedData.email ||
-      !updatedData.mobile
-    ) {
-      errorResponse(res, 404, "Some params are missing");
-      return;
+
+    // Check if required fields are present
+    if (!updatedData.firstname || !updatedData.lastname || !email || !mobile) {
+      return errorResponse(res, 404, "Some params are missing");
     }
+
+    // Check for existing email
+    const existingUser = await usermodel.findOne({ email, _id: { $ne: _id } });
+    if (existingUser) {
+      return errorResponse(res, 409, "User with this email already exists");
+    }
+
+    // Check for existing mobile
+    const existingMobile = await usermodel.findOne({
+      mobile,
+      _id: { $ne: _id },
+    });
+    if (existingMobile) {
+      return errorResponse(res, 409, "User with this mobile already exists");
+    }
+
+    // Update the user
     const updated = await usermodel.findByIdAndUpdate(
       _id,
-      updatedData,
+      { email, mobile, ...updatedData },
       options
     );
 
-    successResponse(res, "success Updated", updated);
+    if (!updated) {
+      return errorResponse(res, 404, "User not found");
+    }
+
+    successResponse(res, "Successfully updated", updated);
   } catch (error) {
     console.log("error", error);
-    errorResponse(res, 500, "internal server error");
+    errorResponse(res, 500, "Internal server error");
   }
 }
 
@@ -128,3 +145,12 @@ async function admindeleteuserHandler(req, res) {
     errorResponse(res, 500, "internal server error");
   }
 }
+
+// const existingUser = await usermodel.findOne({ email });
+// if (existingUser) {
+//   return errorResponse(res, 409, "User with this email already exists");
+// }
+// const existingMobile = await usermodel.findOne({ mobile });
+// if (existingMobile) {
+//   return errorResponse(res, 409, "User with this mobile already exists");
+// }

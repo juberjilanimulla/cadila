@@ -7,7 +7,7 @@ const contactSchema = new Schema(
     mobile: Number,
     email: String,
     message: String,
-    teamaccpected: {
+    termsaccepted: {
       type: Boolean,
       default: false,
     },

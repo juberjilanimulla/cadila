@@ -60,13 +60,24 @@ async function updatejobpostingHandler(req, res) {
       errorResponse(res, 404, "Some params are missing");
       return;
     }
+    // Add logic to mark the job posting as unapproved after update
+    updatedData.approved = false;
+
     const updated = await jobpostingmodel.findByIdAndUpdate(
       _id,
       updatedData,
       options
     );
 
-    successResponse(res, "success Updated", updated);
+    if (!updated) {
+      return errorResponse(res, 404, "Job posting not found");
+    }
+
+    successResponse(
+      res,
+      "Job posting updated successfully. Awaiting admin/manager approval.",
+      updated
+    );
   } catch (error) {
     console.log("error", error);
     errorResponse(res, 500, "internal server error");

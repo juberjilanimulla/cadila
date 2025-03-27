@@ -218,19 +218,21 @@ export async function sendEmailOTP(email) {
         {
           From: {
             Email: process.env.MAILJET_SENDER,
-            Name: "Firstclusive Branding",
+            Name: "Cadila Global",
           },
           To: [{ Email: email }],
-          Subject: "Verify your email",
-          TextPart: `Hi,
+          Subject: "Reset your password",
+          TextPart: `Hi ,
 
-This is to inform you that you have otp successfully with Firstclusive Branding.
+Thank you for connecting with Cadila Global.
 
-Here is your OTP to verify your email:
+Please use the following One-Time Password (OTP) to verify your email address:
 ${otp}
+ 
+If you did not request this verification, please disregard this message.
 
-Regards,
-Firstclusive Team`,
+Warm regards,
+Cadila Globall`,
         },
       ],
     });
@@ -277,12 +279,12 @@ export async function sendContactFormEmail({
         {
           From: {
             Email: process.env.MAILJET_SENDER,
-            Name: "Cadila Contact Form",
+            Name: "Cadila Global ",
           },
           To: [
             {
               Email: process.env.ADMIN_JU, // Admin email to receive alerts
-              Name: "Cadila Admin",
+              Name: "Cadila Global",
             },
           ],
           Subject: "New Contact Form Submission",
@@ -321,26 +323,26 @@ export async function sendUserApprovalStatusEmail({
     );
 
     const subject = approved
-      ? " You're Approved by Admin!"
-      : " Your Request Was Rejected";
+      ? " You account has been Approved."
+      : " Your account have been locked.";
 
     const message = approved
-      ? `<p>Hi ${firstname},</p><p>We’re happy to let you know that your account has been <strong>approved</strong> by our admin team. You may now proceed with accessing the dashboard.</p>`
-      : `<p>Hi ${firstname},</p><p>We regret to inform you that your registration request was <strong>rejected</strong> by our admin team.</p>`;
+      ? `<p>Hi ${firstname},</p><p> Your account has been <strong>approved</strong> by our admin team. You may now proceed with accessing the dashboard.</p>`
+      : `<p>Hi ${firstname},</p><p> Your account has been <strong>locked</strong>. Please contact your admin team to unlock your account.</p>`;
 
     await mj.post("send", { version: "v3.1" }).request({
       Messages: [
         {
           From: {
             Email: process.env.MAILJET_SENDER,
-            Name: "Firstclusive Admin",
+            Name: "Cadila Global",
           },
           To: [{ Email: email }],
           Subject: subject,
           HTMLPart: `
             ${message}
             <br/>
-            <p>Regards,<br/>Firstclusive Team</p>
+            <p>Regards,<br/>Cadila Global</p>
           `,
         },
       ],
@@ -353,7 +355,61 @@ export async function sendUserApprovalStatusEmail({
   }
 }
 
-export async function sendMailToTalent({
+// export async function sendMailToTalent({
+//   companyname,
+//   email,
+//   jobrole,
+//   jobdescription,
+//   mobile,
+// }) {
+//   try {
+//     const mj = Mailjet.apiConnect(
+//       process.env.MAILJET_API_KEY,
+//       process.env.MAILJET_SECRET_KEY
+//     );
+
+//     const request = await mj.post("send", { version: "v3.1" }).request({
+//       Messages: [
+//         {
+//           From: {
+//             Email: process.env.MAILJET_SENDER,
+//             Name: "Cadila Global",
+//           },
+//           To: [
+//             {
+//               Email: email, // Talent's email address
+//               Name: companyname,
+//             },
+//           ],
+//           Subject: " Congratulations! Your Job Role Submission is Received",
+//           HTMLPart: `
+//             <h3> Thank You for Submitting a Job Role!</h3>
+//             <p>Dear ${companyname},</p>
+//             <p>We have received the following details for your job posting:</p>
+//             <ul>
+//               <li><strong>Job Role:</strong> ${jobrole}</li>
+//               <li><strong>Job Description:</strong> ${jobdescription}</li>
+//               <li><strong>Mobile:</strong> ${mobile}</li>
+//               <li><strong>Email:</strong> ${email}</li>
+//             </ul>
+//             <p>Our team will review your submission and get back to you shortly.</p>
+//             <br/>
+//             <p style="font-size: 13px; color: #888;">If you did not submit this, please contact us immediately at ${process.env.ADMIN_JU}.</p>
+//           `,
+//         },
+//       ],
+//     });
+
+//     return true;
+//   } catch (error) {
+//     console.error(
+//       "Mailjet Talent Email Error:",
+//       error.response?.body || error.message
+//     );
+//     return false;
+//   }
+// }
+export async function sendMailToAdminforTalent({
   companyname,
   email,
   jobrole,
@@ -370,40 +426,43 @@ export async function sendMailToTalent({
       Messages: [
         {
           From: {
-            Email: process.env.MAILJET_SENDER,
-            Name: "Firstclusive Team",
+            Email: process.env.MAILJET_SENDER, // Verified sender email address
+            Name: "Talent Hire Form",
           },
           To: [
             {
-              Email: email, // Talent's email address
-              Name: companyname,
+              Email: process.env.ADMIN_JU, // Admin email address
+              Name: "Cadila Global Admin",
             },
           ],
-          Subject: " Congratulations! Your Job Role Submission is Received",
+          ReplyTo: {
+            Email: email, // User's email address to allow direct reply
+            Name: companyname,
+          },
+          Subject: "New Talent Hire Submission Received",
           HTMLPart: `
-            <h3> Thank You for Submitting a Job Role!</h3>
-            <p>Dear ${companyname},</p>
-            <p>We have received the following details for your job posting:</p>
+            <h3> New Talent Hire Submission Received</h3>
+            <p>The following details were submitted by a company:</p>
             <ul>
+              <li><strong>Company Name:</strong> ${companyname}</li>
               <li><strong>Job Role:</strong> ${jobrole}</li>
               <li><strong>Job Description:</strong> ${jobdescription}</li>
               <li><strong>Mobile:</strong> ${mobile}</li>
               <li><strong>Email:</strong> ${email}</li>
             </ul>
-            <p>Our team will review your submission and get back to you shortly.</p>
+            <p>Please review this submission and take the necessary actions.</p>
             <br/>
-            <p style="font-size: 13px; color: #888;">If you did not submit this, please contact us immediately at ${process.env.ADMIN_JU}.</p>
+            <p style="font-size: 13px; color: #888;">This email was automatically generated by the Talent Hire Form system.</p>
           `,
         },
       ],
     });
-
-    return true;
+    return { success: true, message: "Email sent successfully to admin." };
   } catch (error) {
     console.error(
       "Mailjet Talent Email Error:",
       error.response?.body || error.message
     );
-    return false;
+    return { success: false, error: error.response?.body || error.message };
   }
 }

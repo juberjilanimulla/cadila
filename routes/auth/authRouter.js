@@ -42,7 +42,7 @@ async function signinHandler(req, res) {
 
     if (users.role === "manager" || users.role === "recruiter") {
       if (!users.approved) {
-        return errorResponse(res, 403, "Wait for admin approval");
+        return errorResponse(res, 403, "Wait for Admin Approval");
       }
     }
     const userid = users._id.toString();
@@ -78,7 +78,7 @@ async function forgetpasswordHandler(req, res) {
       return errorResponse(
         res,
         429,
-        "Too many requests, please try again later"
+        "Too many requests. Please try again after 15 minutes"
       );
     }
     usersotp.tokenotp = await sendEmailOTP(email);
@@ -208,6 +208,10 @@ async function signupHandler(req, res) {
     const existingUser = await usermodel.findOne({ email });
     if (existingUser) {
       return errorResponse(res, 409, "User with this email already exists");
+    }
+    const existingMobile = await usermodel.findOne({ mobile });
+    if (existingMobile) {
+      return errorResponse(res, 409, "User with this mobile already exists");
     }
 
     // 🔹 Check Manager Limit (Max 10)
