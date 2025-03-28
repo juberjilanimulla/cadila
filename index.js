@@ -4,7 +4,6 @@ import config from "./config.js";
 import morgan from "morgan";
 import cors from "cors";
 import bodyParser from "body-parser";
-import path from "path";
 import {
   Admin,
   authMiddleware,

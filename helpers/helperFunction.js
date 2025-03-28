@@ -1,7 +1,7 @@
 import { errorResponse } from "./serverResponse.js";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
-import bcrypt, { compare } from "bcrypt";
+import bcrypt, { compare } from "bcryptjs";
 import axios from "axios";
 import config from "../config.js";
 import crypto from "crypto";
