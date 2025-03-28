@@ -26,6 +26,7 @@
     "node-mailjet": "^6.0.8",
     "nodemailer": "^6.10.0",
     "pm2": "^6.0.5",
+    "readable-stream": "^4.7.0",
     "uuid": "^11.1.0"
   }
 }
