@@ -210,7 +210,7 @@ async function updatejobpostHandler(req, res) {
       options
     );
 
-    successResponse(res, "success Updated", updated);
+    successResponse(res, "success updated", updated);
   } catch (error) {
     console.log("error", error);
     errorResponse(res, 500, "internal server error");
