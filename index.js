@@ -63,7 +63,7 @@ app.use("/api/user", userRouter);
 app.use("/api/admin", authMiddleware, isAdminMiddleware, adminRouter);
 app.use("/api/manager", authMiddleware, managerRouter);
 app.use("/api/recruiter", authMiddleware, recruiterRouter);
-app.use("/api/pdf", authMiddleware, express.static("./pdfs"));
+app.use("/api/pdf", express.static("./pdfs"));
 //production
 // if (prod) {
 //   app.use("/", express.static(config.FRONTEND_PATH));
