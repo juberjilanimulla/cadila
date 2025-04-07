@@ -17,7 +17,7 @@ import userRouter from "./routes/user/userRouter.js";
 
 const app = express();
 const port = config.PORT;
-const prod = config.PRODDEV === "prod";
+// const prod = config.PRODDEV === "prod";
 
 app.set("trust proxy", true);
 morgan.token("remote-addr", function (req) {
@@ -65,14 +65,14 @@ app.use("/api/manager", authMiddleware, managerRouter);
 app.use("/api/recruiter", authMiddleware, recruiterRouter);
 app.use("/api/pdf", authMiddleware, express.static("./pdfs"));
 //production
-if (prod) {
-  app.use("/", express.static(config.FRONTEND_PATH));
-  app.get("/*", (req, res) => {
-    res.sendFile("index.html", { root: config.FRONTEND_PATH });
-  });
+// if (prod) {
+//   app.use("/", express.static(config.FRONTEND_PATH));
+//   app.get("/*", (req, res) => {
+//     res.sendFile("index.html", { root: config.FRONTEND_PATH });
+//   });
 
-  console.log("staring production server");
-}
+//   console.log("staring production server");
+// }
 
 // not found
 app.use("*", (req, res) => {
