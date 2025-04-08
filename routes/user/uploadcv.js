@@ -178,11 +178,38 @@ cvpdfRouter.post("/:id", (req, res) => {
     const tempFilePath = req.file.path;
 
     try {
+      // 1. Find applicant
+      const applicant = await jobapplicantsmodel.findById(req.params.id);
+      if (!applicant) {
+        fs.unlinkSync(tempFilePath);
+        return errorResponse(res, 404, "Applicant not found");
+      }
+
+      // 2. Create/find Google Drive folder
+      const folderName = "cadilaJobApplicantsResume";
+      const folderList = await drive.files.list({
+        q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+        fields: "files(id)",
+      });
+
+      let folderId;
+      if (folderList.data.files.length > 0) {
+        folderId = folderList.data.files[0].id;
+      } else {
+        const folder = await drive.files.create({
+          resource: {
+            name: folderName,
+            mimeType: "application/vnd.google-apps.folder",
+          },
+          fields: "id",
+        });
+        folderId = folder.data.id;
+      }
+
+      // 3. Set metadata with folder ID
       const fileMeta = {
         name: req.file.filename,
-        parents: process.env.GOOGLE_FOLDER_ID
-          ? [process.env.GOOGLE_FOLDER_ID]
-          : [],
+        parents: [folderId],
       };
 
       const media = {
@@ -190,12 +217,14 @@ cvpdfRouter.post("/:id", (req, res) => {
         body: fs.createReadStream(tempFilePath),
       };
 
+      // 4. Upload to Drive
       const uploaded = await drive.files.create({
         resource: fileMeta,
         media: media,
         fields: "id, webViewLink",
       });
 
+      // 5. Make file public
       await drive.permissions.create({
         fileId: uploaded.data.id,
         requestBody: {
@@ -206,19 +235,13 @@ cvpdfRouter.post("/:id", (req, res) => {
 
       const publicUrl = uploaded.data.webViewLink;
 
-      // ✅ Start from here:
-      const applicant = await jobapplicantsmodel.findById(req.params.id);
-      console.log("applicant", applicant);
-      if (!applicant) {
-        fs.unlinkSync(tempFilePath);
-        return errorResponse(res, 404, "Applicant not found");
-      }
-
+      // 6. Save to MongoDB
       applicant.resume = publicUrl;
       await applicant.save();
 
       fs.unlinkSync(tempFilePath);
       successResponse(res, "Resume uploaded to Google Drive", applicant);
+      console.log("Uploaded to folder:", folderName);
     } catch (error) {
       console.log("Upload error:", error);
       errorResponse(res, 500, "Internal server error during upload");
