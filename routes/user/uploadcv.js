@@ -196,7 +196,6 @@ cvpdfRouter.post("/:id", (req, res) => {
         fields: "id, webViewLink",
       });
 
-      // Make file public
       await drive.permissions.create({
         fileId: uploaded.data.id,
         requestBody: {
@@ -207,21 +206,19 @@ cvpdfRouter.post("/:id", (req, res) => {
 
       const publicUrl = uploaded.data.webViewLink;
 
-      // Save Drive link to DB
-      const updatedContactcv = await jobapplicantsmodel.findByIdAndUpdate(
-        req.params.id,
-        { resume: publicUrl },
-        { new: true }
-      );
+      // ✅ Start from here:
+      const applicant = await jobapplicantsmodel.findById(req.params.id);
+      console.log("applicant", applicant);
+      if (!applicant) {
+        fs.unlinkSync(tempFilePath);
+        return errorResponse(res, 404, "Applicant not found");
+      }
 
-      // Clean up temp file
+      applicant.resume = publicUrl;
+      await applicant.save();
+
       fs.unlinkSync(tempFilePath);
-
-      // if (!updatedContactcv) {
-      //   return errorResponse(res, 404, "Applicant not found");
-      // }
-
-      successResponse(res, "Resume uploaded to Google Drive", updatedContactcv);
+      successResponse(res, "Resume uploaded to Google Drive", applicant);
     } catch (error) {
       console.log("Upload error:", error);
       errorResponse(res, 500, "Internal server error during upload");
