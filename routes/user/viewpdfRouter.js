@@ -78,14 +78,14 @@
 
 import { Router } from "express";
 import {
-  errorResponse,
   successResponse,
+  errorResponse,
 } from "../../helpers/serverResponse.js";
 import jobapplicantsmodel from "../../model/jobapplicantsmodel.js";
 
-const adminviewpdfRouter = Router();
+const viewpdfRouter = Router();
 
-adminviewpdfRouter.get("/:id", async (req, res) => {
+viewpdfRouter.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -109,4 +109,4 @@ adminviewpdfRouter.get("/:id", async (req, res) => {
   }
 });
 
-export default adminviewpdfRouter;
+export default viewpdfRouter;
