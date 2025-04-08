@@ -89,7 +89,6 @@
 
 // export default cvpdfRouter;
 
-
 import { Router } from "express";
 import multer from "multer";
 import { google } from "googleapis";
@@ -133,9 +132,7 @@ const tempStorage = multer.diskStorage({
 
 function checkPdfFileType(file, cb) {
   const filetypes = /pdf/;
-  const extname = filetypes.test(
-    path.extname(file.originalname).toLowerCase()
-  );
+  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = filetypes.test(file.mimetype);
 
   if (mimetype && extname) {
@@ -162,9 +159,7 @@ const oAuth2Client = new google.auth.OAuth2(
   redirect_uris[0]
 );
 
-oAuth2Client.setCredentials(
-  JSON.parse(fs.readFileSync("token.json"))
-);
+oAuth2Client.setCredentials(JSON.parse(fs.readFileSync("token.json")));
 
 const drive = google.drive({ version: "v3", auth: oAuth2Client });
 
@@ -185,7 +180,9 @@ cvpdfRouter.post("/:id", (req, res) => {
     try {
       const fileMeta = {
         name: req.file.filename,
-        parents: process.env.GOOGLE_FOLDER_ID ? [process.env.GOOGLE_FOLDER_ID] : [],
+        parents: process.env.GOOGLE_FOLDER_ID
+          ? [process.env.GOOGLE_FOLDER_ID]
+          : [],
       };
 
       const media = {
@@ -220,9 +217,9 @@ cvpdfRouter.post("/:id", (req, res) => {
       // Clean up temp file
       fs.unlinkSync(tempFilePath);
 
-      if (!updatedContactcv) {
-        return errorResponse(res, 404, "Applicant not found");
-      }
+      // if (!updatedContactcv) {
+      //   return errorResponse(res, 404, "Applicant not found");
+      // }
 
       successResponse(res, "Resume uploaded to Google Drive", updatedContactcv);
     } catch (error) {
