@@ -154,14 +154,19 @@ const tempStorage = multer.diskStorage({
   },
 });
 function checkPdfFileType(file, cb) {
-  const filetypes = /pdf/;
+  const filetypes = /\.(pdf|doc|docx)$/i;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
+  const allowedMimes = [
+    "application/pdf",
+    "application/msword", // .doc
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+  ];
+  const mimetype = allowedMimes.includes(file.mimetype);
 
   if (mimetype && extname) {
     return cb(null, true);
   } else {
-    cb(new Error("Only PDF files are allowed"));
+    cb(new Error("Only PDF and Word documents (.doc, .docx) are allowed"));
   }
 }
 
