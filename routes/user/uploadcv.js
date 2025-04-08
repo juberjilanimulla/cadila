@@ -116,20 +116,43 @@ const tempStorage = multer.diskStorage({
     fs.mkdirSync(tempPath, { recursive: true });
     cb(null, tempPath);
   },
+  //   filename: async (req, file, cb) => {
+  //     try {
+  //       const pid = req.params.id;
+  //       const pdfnumber = await getnumber(pid);
+  //       const id = Math.floor(Math.random() * 900000) + 1000;
+  //       const ext = path.extname(file.originalname);
+  //       const filename = `${pdfnumber}__${id}${ext}`;
+  //       cb(null, filename);
+  //     } catch (error) {
+  //       cb(error);
+  //     }
+  //   },
+  // });
   filename: async (req, file, cb) => {
     try {
       const pid = req.params.id;
+
+      // Get applicant details from DB
+      const applicant = await jobapplicantsmodel.findById(pid);
+      const fullName = applicant?.name || "Applicant";
+
+      // Clean name (remove spaces and symbols)
+      const cleanName = fullName.replace(/\s+/g, "_").replace(/[^\w\-]/g, "");
+
       const pdfnumber = await getnumber(pid);
       const id = Math.floor(Math.random() * 900000) + 1000;
       const ext = path.extname(file.originalname);
-      const filename = `${pdfnumber}__${id}${ext}`;
+
+      // Final filename
+      const filename = `${cleanName}_${pdfnumber}__${id}${ext}`;
+
       cb(null, filename);
     } catch (error) {
       cb(error);
     }
   },
 });
-
 function checkPdfFileType(file, cb) {
   const filetypes = /pdf/;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -241,7 +264,6 @@ cvpdfRouter.post("/:id", (req, res) => {
 
       fs.unlinkSync(tempFilePath);
       successResponse(res, "Resume uploaded to Google Drive", applicant);
-      console.log("Uploaded to folder:", folderName);
     } catch (error) {
       console.log("Upload error:", error);
       errorResponse(res, 500, "Internal server error during upload");
