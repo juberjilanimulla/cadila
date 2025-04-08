@@ -60,7 +60,7 @@ adminviewpdfRouter.get("/:id", async (req, res) => {
 
     // Assume your resume PDFs are stored in /uploads/resumes/
     const resumePath = path.join(__dirname, "../../pdfs", resumeFile);
-
+    console.log("resumePath", resumePath);
     if (!fs.existsSync(resumePath)) {
       return errorResponse(res, 404, "Resume file not found on server");
     }

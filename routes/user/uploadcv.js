@@ -78,7 +78,8 @@ cvpdfRouter.post("/:id", (req, res) => {
       if (!updatedContactcv) {
         return errorResponse(res, 404, "contact cv not found");
       }
-      successResponse(res, "PDF successfully uploaded cv");
+      console.log("updatedContactcv", updatedContactcv);
+      successResponse(res, "PDF successfully uploaded cv", updatedContactcv);
     } catch (error) {
       console.log("error", error);
       errorResponse(res, 500, "internal server error");

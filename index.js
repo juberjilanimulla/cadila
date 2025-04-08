@@ -75,11 +75,11 @@ app.use("/api/pdf", express.static("./pdfs"));
 // }
 
 // not found
-app.use("*", (req, res) => {
-  res.status(403).json({
-    message: "not found",
-  });
-});
+// app.use("*", (req, res) => {
+//   res.status(403).json({
+//     message: "not found",
+//   });
+// });
 
 //email sender
 
