@@ -23,14 +23,13 @@ async function createjobpostHandler(req, res) {
       return errorResponse(res, 403, "Unauthorized access - Admins only");
     }
 
-    const { jobtitle, experience, salary, location, jobdescription } = req.body;
+    const { jobtitle, experience, location, jobdescription } = req.body;
     if (!jobtitle || !experience || !location || !jobdescription) {
       return errorResponse(res, 400, "some params are missing");
     }
     const params = {
       jobtitle,
       experience,
-      salary,
       location,
       jobdescription,
       approved: true,
@@ -143,7 +142,6 @@ async function updatejobpostHandler(req, res) {
     if (
       !updatedData.jobtitle ||
       !updatedData.experience ||
-      !updatedData.salary ||
       !updatedData.location ||
       !updatedData.jobdescription
     ) {

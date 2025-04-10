@@ -9,7 +9,10 @@ const jobpostingSchema = new Schema(
 
     jobtitle: String,
     experience: String,
-    salary: String,
+    salary: {
+      type: String,
+      default: "",
+    },
     location: String,
     jobdescription: String,
     approved: {

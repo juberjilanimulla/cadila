@@ -53,7 +53,6 @@ async function updatejobpostingHandler(req, res) {
     if (
       !updatedData.jobtitle ||
       !updatedData.experience ||
-      !updatedData.salary ||
       !updatedData.location ||
       !updatedData.jobdescription
     ) {
