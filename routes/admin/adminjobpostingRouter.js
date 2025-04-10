@@ -24,7 +24,7 @@ async function createjobpostHandler(req, res) {
     }
 
     const { jobtitle, experience, salary, location, jobdescription } = req.body;
-    if (!jobtitle || !experience || !salary || !location || !jobdescription) {
+    if (!jobtitle || !experience || !location || !jobdescription) {
       return errorResponse(res, 400, "some params are missing");
     }
     const params = {
