@@ -9,7 +9,7 @@ const contactSchema = new Schema(
     message: String,
     termsaccepted: {
       type: Boolean,
-      default: false,
+      default: true,
     },
   },
   { timestamps: true, versionKey: false }
