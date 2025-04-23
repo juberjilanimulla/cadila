@@ -16,14 +16,7 @@ async function createcontactusHandler(req, res) {
   try {
     const { firstname, lastname, email, mobile, message, termsaccepted } =
       req.body;
-    if (
-      !firstname ||
-      !lastname ||
-      !email ||
-      !mobile ||
-      !message ||
-      !termsaccepted
-    ) {
+    if (!firstname || !lastname || !email || !mobile || !message) {
       return errorResponse(res, 400, "some params are missing");
     }
 
