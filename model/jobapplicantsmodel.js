@@ -24,6 +24,10 @@ const jobapplicantSchema = new Schema(
       enum: ["pending", "reviewed", "accepted", "rejected"],
       default: "pending",
     },
+    termsaccepted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true, versionKey: false }
 );

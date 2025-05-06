@@ -19,7 +19,8 @@ export default jobapplicantsRouter;
 async function createjobapplicantHandler(req, res) {
   try {
     const userid = res.locals.id;
-    const { jobid, name, email, mobile, yearofexperience } = req.body;
+    const { jobid, name, email, mobile, yearofexperience, termsaccepted } =
+      req.body;
 
     if (!jobid || !name || !email || !mobile || !yearofexperience) {
       return errorResponse(res, 400, "Missing required fields");
@@ -38,6 +39,7 @@ async function createjobapplicantHandler(req, res) {
       email,
       mobile,
       yearofexperience,
+      termsaccepted,
     });
 
     successResponse(res, "Application submitted successfully", application);

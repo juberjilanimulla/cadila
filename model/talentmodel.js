@@ -7,6 +7,10 @@ const talentSchema = new Schema(
     jobrole: String,
     jobdescription: String,
     mobile: String,
+    termsaccepted: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true, versionKey: false }
 );

@@ -95,7 +95,7 @@ async function forgetpasswordHandler(req, res) {
 async function refreshtokenHandler(req, res) {
   try {
     const token = req.body.public_token;
-
+    
     if (!token) {
       errorResponse(res, 400, "token not found");
       return;

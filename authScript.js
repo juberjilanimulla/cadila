@@ -21,7 +21,7 @@ const authUrl = oAuth2Client.generateAuthUrl({
   scope: SCOPES,
 });
 
-console.log("\n🔗 Visit this URL to authorize access:");
+console.log(" Visit this URL to authorize access:");
 console.log(authUrl);
 
 // Ask user for the authorization code
@@ -30,15 +30,15 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-rl.question("\n🧾 Paste the code here: ", async (code) => {
+rl.question("Paste the code here ", async (code) => {
   try {
     const { tokens } = await oAuth2Client.getToken(code);
     oAuth2Client.setCredentials(tokens);
     fs.writeFileSync("token.json", JSON.stringify(tokens));
-    console.log("✅ Token saved to token.json");
+    console.log(" Token saved to token.json");
     rl.close();
   } catch (err) {
-    console.error("❌ Error getting token", err);
+    console.error("Error getting token", err);
     rl.close();
   }
 });

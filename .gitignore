@@ -140,6 +140,13 @@ test*
 
 #.json
 recruiterData.json
-
+credentials.json
+token.json
 #pdf
-/pdfs
+/pdfs  
+
+credentials.json
+token.json
+
+credentials.json
+token.json

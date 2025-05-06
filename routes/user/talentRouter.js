@@ -13,11 +13,25 @@ export default talentRouter;
 
 async function createtalentHandler(req, res) {
   try {
-    const { companyname, email, jobrole, jobdescription, mobile } = req.body;
+    const {
+      companyname,
+      email,
+      jobrole,
+      jobdescription,
+      mobile,
+      termsaccepted,
+    } = req.body;
     if (!companyname || !email || !jobrole || !jobdescription || !mobile) {
       return errorResponse(res, 400, "some params are missing");
     }
-    const params = { companyname, email, jobrole, jobdescription, mobile };
+    const params = {
+      companyname,
+      email,
+      jobrole,
+      jobdescription,
+      mobile,
+      termsaccepted,
+    };
     const talent = await talentmodel.create(params);
     await sendMailToAdminforTalent(params);
     successResponse(res, "success", talent);

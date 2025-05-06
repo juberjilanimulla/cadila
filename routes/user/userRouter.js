@@ -12,3 +12,4 @@ userRouter.use("/jobapplicants", jobapplicantsRouter);
 userRouter.use("/jobs", usersjobRouter);
 userRouter.use("/viewpdf", viewpdfRouter);
 export default userRouter;
+   
