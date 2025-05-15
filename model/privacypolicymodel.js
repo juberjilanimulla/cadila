@@ -1,8 +1,8 @@
-import { model, Schema, trusted } from "mongoose";
+import { model, Schema } from "mongoose";
 
 const privacypolicySchema = new Schema(
   {
-    privacypolicySchema: [
+    privacypolicy: [
       {
         section: {
           type: String,
@@ -12,11 +12,10 @@ const privacypolicySchema = new Schema(
           {
             title: {
               type: String,
-              required: true,
+            
             },
             value: {
               type: String,
-              required: true,
             },
           },
         ],

@@ -12,7 +12,7 @@ export default admintermsandconditionRouter;
 admintermsandconditionRouter.get("/", gettermsandconditionHandler);
 admintermsandconditionRouter.post("/create", createtermsandconditionHandler);
 admintermsandconditionRouter.put(
-  "/update/:id/:section/:itemid",
+  "/update/:id/:sectionid/:itemid",
   updatetermsandconditionHandler
 );
 admintermsandconditionRouter.delete(
@@ -20,20 +20,23 @@ admintermsandconditionRouter.delete(
   deletetermandconditionHandler
 );
 admintermsandconditionRouter.put(
-  "/updatesection/:id/:oldsection",
+  "/updatesection/:id/:sectionid",
   updatesectionnameHandler
 );
 admintermsandconditionRouter.post("/:id/addsection", addsectionHandler);
 admintermsandconditionRouter.delete(
-  "/:id/deletesection/:section",
+  "/:id/deletesection/:sectionid",
   deletesectionHandler
 );
 
 admintermsandconditionRouter.post(
-  "/:id/additems/:section",
+  "/:id/additems/:sectionid",
   itemaddsectionHandler
 );
-admintermsandconditionRouter.delete("/:id/deleteitem/:section/:itemid",deleteitemfromsectionHandler)
+admintermsandconditionRouter.delete(
+  "/:id/deleteitem/:sectionid/:itemid",
+  deleteitemfromsectionHandler
+);
 
 async function createtermsandconditionHandler(req, res) {
   try {
@@ -65,11 +68,11 @@ async function createtermsandconditionHandler(req, res) {
 
 async function updatetermsandconditionHandler(req, res) {
   try {
-    const { id, section, itemid } = req.params;
+    const { id, sectionid, itemid } = req.params;
     const { title, value } = req.body;
 
     if (!title || !value) {
-      return errorResponse(res, 400, "title and value are required");
+      return errorResponse(res, 400, "Title and value are required");
     }
 
     const document = await termandconditionmodel.findById(id);
@@ -77,25 +80,23 @@ async function updatetermsandconditionHandler(req, res) {
       return errorResponse(res, 404, "Document not found");
     }
 
-    const sectionIndex = document.termsandconditions.findIndex(
-      (sec) => sec.section === section
+    const section = document.termsandconditions.find(
+      (sec) => sec._id.toString() === sectionid
     );
 
-    if (sectionIndex === -1) {
+    if (!section) {
       return errorResponse(res, 404, "Section not found");
     }
 
-    const itemIndex = document.termsandconditions[sectionIndex].items.findIndex(
-      (itm) => itm._id.toString() === itemid
-    );
+    const item = section.items.find((itm) => itm._id.toString() === itemid);
 
-    if (itemIndex === -1) {
+    if (!item) {
       return errorResponse(res, 404, "Item not found");
     }
 
-    // Perform the update
-    document.termsandconditions[sectionIndex].items[itemIndex].title = title;
-    document.termsandconditions[sectionIndex].items[itemIndex].value = value;
+    // Update values
+    item.title = title;
+    item.value = value;
 
     await document.save();
     successResponse(res, "Item updated successfully", document);
@@ -131,7 +132,7 @@ async function deletetermandconditionHandler(req, res) {
 
 async function updatesectionnameHandler(req, res) {
   try {
-    const { id, oldsection } = req.params;
+    const { id, sectionid } = req.params;
     const { newsection } = req.body;
 
     if (!newsection) {
@@ -144,16 +145,17 @@ async function updatesectionnameHandler(req, res) {
     }
 
     const section = document.termsandconditions.find(
-      (sec) => sec.section === oldsection
+      (sec) => sec._id.toString() === sectionid
     );
 
     if (!section) {
       return errorResponse(res, 404, "Section not found");
     }
 
+    // Update section name
     section.section = newsection;
-    await document.save();
 
+    await document.save();
     successResponse(res, "Section name updated successfully", document);
   } catch (error) {
     console.error("Section name update error", error);
@@ -203,7 +205,8 @@ async function addsectionHandler(req, res) {
 
 async function deletesectionHandler(req, res) {
   try {
-    const { id, section } = req.params;
+    const { id, sectionid } = req.params;
+
     const document = await termandconditionmodel.findById(id);
     if (!document) {
       return errorResponse(res, 404, "Document not found");
@@ -211,9 +214,9 @@ async function deletesectionHandler(req, res) {
 
     const originalLength = document.termsandconditions.length;
 
-    // Remove the section
+    // Filter out the section by sectionid
     document.termsandconditions = document.termsandconditions.filter(
-      (sec) => sec.section !== section
+      (sec) => sec._id.toString() !== sectionid
     );
 
     if (document.termsandconditions.length === originalLength) {
@@ -222,7 +225,7 @@ async function deletesectionHandler(req, res) {
 
     await document.save();
 
-    successResponse(res, "Section deleted successfully");
+    successResponse(res, "Section deleted successfully", document);
   } catch (error) {
     console.log("error", error);
     errorResponse(res, 500, "internal server error");
@@ -231,7 +234,7 @@ async function deletesectionHandler(req, res) {
 
 async function itemaddsectionHandler(req, res) {
   try {
-    const { id, section } = req.params;
+    const { id, sectionid } = req.params;
     const { items } = req.body;
 
     if (!Array.isArray(items) || items.length === 0) {
@@ -244,23 +247,20 @@ async function itemaddsectionHandler(req, res) {
       value: item.value,
     }));
 
-    // Find the document
     const document = await termandconditionmodel.findById(id);
     if (!document) {
       return errorResponse(res, 404, "Document not found");
     }
 
-    // Find the section
-    const sectionIndex = document.termsandconditions.findIndex(
-      (sec) => sec.section === section
+    const section = document.termsandconditions.find(
+      (sec) => sec._id.toString() === sectionid
     );
 
-    if (sectionIndex === -1) {
+    if (!section) {
       return errorResponse(res, 404, "Section not found");
     }
 
-    // Push new items into the section
-    document.termsandconditions[sectionIndex].items.push(...formattedItems);
+    section.items.push(...formattedItems);
     await document.save();
 
     successResponse(res, "Items added successfully", document);
@@ -272,29 +272,28 @@ async function itemaddsectionHandler(req, res) {
 
 async function deleteitemfromsectionHandler(req, res) {
   try {
-        const { id, section, itemid } = req.params;
+    const { id, sectionid, itemid } = req.params;
 
     const document = await termandconditionmodel.findById(id);
     if (!document) {
       return errorResponse(res, 404, "Document not found");
     }
 
-    const sectionIndex = document.termsandconditions.findIndex(
-      (sec) => sec.section === section
+    const section = document.termsandconditions.find(
+      (sec) => sec._id.toString() === sectionid
     );
 
-    if (sectionIndex === -1) {
+    if (!section) {
       return errorResponse(res, 404, "Section not found");
     }
 
-    const originalLength = document.termsandconditions[sectionIndex].items.length;
+    const originalLength = section.items.length;
 
-    // Filter out the item by itemid
-    document.termsandconditions[sectionIndex].items = document.termsandconditions[sectionIndex].items.filter(
+    section.items = section.items.filter(
       (item) => item._id.toString() !== itemid
     );
 
-    if (document.termsandconditions[sectionIndex].items.length === originalLength) {
+    if (section.items.length === originalLength) {
       return errorResponse(res, 404, "Item not found in section");
     }
 
