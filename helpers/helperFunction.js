@@ -137,7 +137,7 @@ export async function Admin() {
         email: email,
         role: "Admin",
         mobile: "+1 (832) 757-9277",
-        password: bcryptPassword("1234"),
+        password: bcryptPassword("FBCadila@2025"),
         approved: true,
       });
     } else {
