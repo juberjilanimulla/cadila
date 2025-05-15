@@ -6,6 +6,7 @@ import admintalenthireRouter from "./admintalenthireRouter.js";
 import adminjobapplicantsRouter from "./adminjobapplicantsRouter.js";
 import adminusersRouter from "./adminusersRouter.js";
 import admintermsandconditionRouter from "./admintermsandconditionRouter.js";
+import adminprivacypolicyRouter from "./adminprivacypolicyRouter.js";
 
 const adminRouter = Router();
 
@@ -16,4 +17,5 @@ adminRouter.use("/hiretalent", admintalenthireRouter);
 adminRouter.use("/jobapplicants", adminjobapplicantsRouter);
 adminRouter.use("/user", adminusersRouter);
 adminRouter.use("/termsandcondition", admintermsandconditionRouter);
+adminRouter.use("/privacypolicy", adminprivacypolicyRouter);
 export default adminRouter;
