@@ -12,20 +12,14 @@ const termandconditionSchema = new Schema(
           {
             title: {
               type: String,
-              required: true,
             },
             value: {
               type: String,
-              required: true,
             },
           },
         ],
       },
     ],
-    version: {
-      type: Number,
-      default: 1,
-    },
   },
   { timestamps: true, versionKey: false }
 );

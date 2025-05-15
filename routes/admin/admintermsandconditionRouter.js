@@ -51,14 +51,9 @@ async function createtermsandconditionHandler(req, res) {
       return errorResponse(res, 400, "Terms and Conditions already exist");
     }
 
-    const latest = await termandconditionmodel.findOne().sort({ version: -1 });
-    const version = latest ? latest.version + 1 : 1;
-
     const termandcondition = await termandconditionmodel.create({
       termsandconditions,
-      version,
     });
-
     successResponse(res, "Terms and Conditions created", termandcondition);
   } catch (error) {
     console.log("error", error);
@@ -70,10 +65,6 @@ async function updatetermsandconditionHandler(req, res) {
   try {
     const { id, sectionid, itemid } = req.params;
     const { title, value } = req.body;
-
-    if (!title || !value) {
-      return errorResponse(res, 400, "Title and value are required");
-    }
 
     const document = await termandconditionmodel.findById(id);
     if (!document) {
