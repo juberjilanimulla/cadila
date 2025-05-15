@@ -99,7 +99,7 @@ async function updatetermsandconditionHandler(req, res) {
 
 async function gettermsandconditionHandler(req, res) {
   try {
-    const data = await termandconditionmodel.find().sort({ version: -1 });
+    const data = await termandconditionmodel.find();
     successResponse(res, "success", data);
   } catch (error) {
     console.log("error", error);
