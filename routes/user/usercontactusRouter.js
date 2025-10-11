@@ -6,11 +6,11 @@ import {
 import contactmodel from "../../model/contactusmodel.js";
 import { sendContactFormEmail } from "../../helpers/helperFunction.js";
 
-const contactusRouter = Router();
+const usercontactusRouter = Router();
 
-contactusRouter.post("/create", createcontactusHandler);
+usercontactusRouter.post("/create", createcontactusHandler);
 
-export default contactusRouter;
+export default usercontactusRouter;
 
 async function createcontactusHandler(req, res) {
   try {

@@ -3,18 +3,16 @@ import {
   errorResponse,
   successResponse,
 } from "../../helpers/serverResponse.js";
-
 import cvpdfRouter from "./uploadcv.js";
 import jobapplicantsmodel from "../../model/jobapplicantsmodel.js";
 import jobpostingmodel from "../../model/jobpostingmodel.js";
-import jobmodels from "../../model/jobmodel.js";
 
-const jobapplicantsRouter = Router();
+const userjobapplicantsRouter = Router();
 
-jobapplicantsRouter.post("/create", createjobapplicantHandler);
-jobapplicantsRouter.use("/upload", cvpdfRouter);
+userjobapplicantsRouter.post("/create", createjobapplicantHandler);
+userjobapplicantsRouter.use("/upload", cvpdfRouter);
 
-export default jobapplicantsRouter;
+export default userjobapplicantsRouter;
 
 async function createjobapplicantHandler(req, res) {
   try {
