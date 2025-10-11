@@ -2,7 +2,7 @@ import { Router } from "express";
 import usersjobRouter from "./usersjobRouter.js";
 import usertermandconditionRouter from "./usertermandconditionRouter.js";
 import userprivacypolicyRouter from "./userprivacypolicyRouter.js";
-import usertalentRouter from "./usertalentRouter.jsr.js";
+import usertalentRouter from "./usertalentRouter.js";
 import usercontactusRouter from "./usercontactusRouter.js";
 import userjobapplicantsRouter from "./userjobapplicantsRouter.js";
 

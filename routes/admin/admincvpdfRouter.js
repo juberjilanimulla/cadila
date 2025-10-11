@@ -248,271 +248,271 @@
 
 // export default cvpdfRouter;
 
-import { Router } from "express";
-import multer from "multer";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
-import dotenv from "dotenv";
-import pdfParse from "pdf-parse/lib/pdf-parse.js";
-import mammoth from "mammoth";
-import { google } from "googleapis";
-import resumeextractmodel from "../../model/resumeextractmodel.js";
-import {
-  successResponse,
-  errorResponse,
-} from "../../helpers/serverResponse.js";
+// import { Router } from "express";
+// import multer from "multer";
+// import fs from "fs";
+// import path from "path";
+// import { fileURLToPath } from "url";
+// import { dirname } from "path";
+// import dotenv from "dotenv";
+// import pdfParse from "pdf-parse/lib/pdf-parse.js";
+// import mammoth from "mammoth";
+// import { google } from "googleapis";
+// import resumeextractmodel from "../../model/resumeextractmodel.js";
+// import {
+//   successResponse,
+//   errorResponse,
+// } from "../../helpers/serverResponse.js";
 
-dotenv.config();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+// dotenv.config();
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = dirname(__filename);
 
-// Google Drive
-const credentials = JSON.parse(fs.readFileSync("credentials.json"));
-const { client_secret, client_id, redirect_uris } =
-  credentials.web || credentials.installed;
+// // Google Drive
+// const credentials = JSON.parse(fs.readFileSync("credentials.json"));
+// const { client_secret, client_id, redirect_uris } =
+//   credentials.web || credentials.installed;
 
-const oAuth2Client = new google.auth.OAuth2(
-  client_id,
-  client_secret,
-  redirect_uris[0]
-);
-oAuth2Client.setCredentials(JSON.parse(fs.readFileSync("token.json")));
-const drive = google.drive({ version: "v3", auth: oAuth2Client });
+// const oAuth2Client = new google.auth.OAuth2(
+//   client_id,
+//   client_secret,
+//   redirect_uris[0]
+// );
+// oAuth2Client.setCredentials(JSON.parse(fs.readFileSync("token.json")));
+// const drive = google.drive({ version: "v3", auth: oAuth2Client });
 
-// Multer
-const tempStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const tempPath = path.join(__dirname, "../../temp");
-    fs.mkdirSync(tempPath, { recursive: true });
-    cb(null, tempPath);
-  },
-  filename: (req, file, cb) => {
-    const id = Math.floor(Math.random() * 900000) + 1000;
-    const ext = path.extname(file.originalname);
-    cb(null, `${id}${ext}`);
-  },
-});
+// // Multer
+// const tempStorage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     const tempPath = path.join(__dirname, "../../temp");
+//     fs.mkdirSync(tempPath, { recursive: true });
+//     cb(null, tempPath);
+//   },
+//   filename: (req, file, cb) => {
+//     const id = Math.floor(Math.random() * 900000) + 1000;
+//     const ext = path.extname(file.originalname);
+//     cb(null, `${id}${ext}`);
+//   },
+// });
 
-const upload = multer({
-  storage: tempStorage,
-  fileFilter: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const allowedExts = /\.(pdf|docx)$/i;
-    const allowedMimes = [
-      "application/pdf",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    ];
-    if (allowedExts.test(ext) && allowedMimes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error("Only PDF or DOCX files are allowed"));
-    }
-  },
-}).single("airesume");
+// const upload = multer({
+//   storage: tempStorage,
+//   fileFilter: (req, file, cb) => {
+//     const ext = path.extname(file.originalname).toLowerCase();
+//     const allowedExts = /\.(pdf|docx)$/i;
+//     const allowedMimes = [
+//       "application/pdf",
+//       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+//     ];
+//     if (allowedExts.test(ext) && allowedMimes.includes(file.mimetype)) {
+//       cb(null, true);
+//     } else {
+//       cb(new Error("Only PDF or DOCX files are allowed"));
+//     }
+//   },
+// }).single("airesume");
 
-// Extract Text
-async function extractText(filePath) {
-  const ext = path.extname(filePath).toLowerCase();
-  if (ext === ".pdf") {
-    const data = await pdfParse(fs.readFileSync(filePath));
-    return data.text;
-  } else if (ext === ".docx") {
-    const { value } = await mammoth.extractRawText({ path: filePath });
-    return value;
-  } else {
-    throw new Error("Unsupported file type");
-  }
-}
+// // Extract Text
+// async function extractText(filePath) {
+//   const ext = path.extname(filePath).toLowerCase();
+//   if (ext === ".pdf") {
+//     const data = await pdfParse(fs.readFileSync(filePath));
+//     return data.text;
+//   } else if (ext === ".docx") {
+//     const { value } = await mammoth.extractRawText({ path: filePath });
+//     return value;
+//   } else {
+//     throw new Error("Unsupported file type");
+//   }
+// }
 
-function calculateTotalExperience(text) {
-  const ranges = [];
-  const rangePattern =
-    /(?:from\s*)?([A-Za-z]{3,9}[\s\-]?\d{2,4}|\d{1,2}\/\d{2,4})\s*(?:to|-|–|upto|until)\s*(Present|Now|[A-Za-z]{3,9}[\s\-]?\d{2,4}|\d{1,2}\/\d{2,4})/gi;
+// function calculateTotalExperience(text) {
+//   const ranges = [];
+//   const rangePattern =
+//     /(?:from\s*)?([A-Za-z]{3,9}[\s\-]?\d{2,4}|\d{1,2}\/\d{2,4})\s*(?:to|-|–|upto|until)\s*(Present|Now|[A-Za-z]{3,9}[\s\-]?\d{2,4}|\d{1,2}\/\d{2,4})/gi;
 
-  let match;
-  while ((match = rangePattern.exec(text)) !== null) {
-    const fromRaw = match[1];
-    const toRaw = match[2];
+//   let match;
+//   while ((match = rangePattern.exec(text)) !== null) {
+//     const fromRaw = match[1];
+//     const toRaw = match[2];
 
-    const from = parseDate(fromRaw);
-    const to = /present|now/i.test(toRaw) ? new Date() : parseDate(toRaw);
+//     const from = parseDate(fromRaw);
+//     const to = /present|now/i.test(toRaw) ? new Date() : parseDate(toRaw);
 
-    if (from && to && to > from) {
-      ranges.push({ from, to });
-    }
-  }
+//     if (from && to && to > from) {
+//       ranges.push({ from, to });
+//     }
+//   }
 
-  let totalMonths = 0;
-  for (const { from, to } of ranges) {
-    const months =
-      (to.getFullYear() - from.getFullYear()) * 12 +
-      (to.getMonth() - from.getMonth());
-    totalMonths += months;
-  }
+//   let totalMonths = 0;
+//   for (const { from, to } of ranges) {
+//     const months =
+//       (to.getFullYear() - from.getFullYear()) * 12 +
+//       (to.getMonth() - from.getMonth());
+//     totalMonths += months;
+//   }
 
-  const totalYears = (totalMonths / 12).toFixed(1); // rounded to 1 decimal
-  return totalYears;
-}
+//   const totalYears = (totalMonths / 12).toFixed(1); // rounded to 1 decimal
+//   return totalYears;
+// }
 
-function parseDate(str) {
-  str = str.replace(/[-]/g, " ").trim();
-  const tryFormats = [
-    new Date(str), // Mar 2020 or March 2020
-    new Date("01 " + str), // e.g. "04/2019" → "01 04/2019"
-    new Date(str.replace("/", "-")), // 04/2019
-  ];
-  for (const d of tryFormats) {
-    if (!isNaN(d.getTime())) return d;
-  }
-  return null;
-}
+// function parseDate(str) {
+//   str = str.replace(/[-]/g, " ").trim();
+//   const tryFormats = [
+//     new Date(str), // Mar 2020 or March 2020
+//     new Date("01 " + str), // e.g. "04/2019" → "01 04/2019"
+//     new Date(str.replace("/", "-")), // 04/2019
+//   ];
+//   for (const d of tryFormats) {
+//     if (!isNaN(d.getTime())) return d;
+//   }
+//   return null;
+// }
 
-// Parse Data Without OpenAI
-function localParseResume(text) {
-  const lines = text
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean);
-  const lowerText = text.toLowerCase();
+// // Parse Data Without OpenAI
+// function localParseResume(text) {
+//   const lines = text
+//     .split("\n")
+//     .map((l) => l.trim())
+//     .filter(Boolean);
+//   const lowerText = text.toLowerCase();
 
-  const email =
-    text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}/gi)?.[0] || "";
-  const mobile = text.match(/(\+91[\s-]?)?[6-9]\d{9}/g) || [];
+//   const email =
+//     text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-z]{2,}/gi)?.[0] || "";
+//   const mobile = text.match(/(\+91[\s-]?)?[6-9]\d{9}/g) || [];
 
-  // Name logic: from first line OR email prefix fallback
-  let name = lines[0];
-  if (!name || name.length > 50 || name.includes("@") || name.match(/\d/)) {
-    name = email ? email.split("@")[0].replace(/[._]/g, " ") : "";
-  }
+//   // Name logic: from first line OR email prefix fallback
+//   let name = lines[0];
+//   if (!name || name.length > 50 || name.includes("@") || name.match(/\d/)) {
+//     name = email ? email.split("@")[0].replace(/[._]/g, " ") : "";
+//   }
 
-  // Address logic: find line with pincode or "Address"
-  const addressLine = lines.find(
-    (line) => line.toLowerCase().includes("address") || line.match(/\b\d{6}\b/)
-  );
-  const address = addressLine || "";
+//   // Address logic: find line with pincode or "Address"
+//   const addressLine = lines.find(
+//     (line) => line.toLowerCase().includes("address") || line.match(/\b\d{6}\b/)
+//   );
+//   const address = addressLine || "";
 
-  // Skills: scan lines after "skills" heading
-  let skills = [];
-  const skillIndex = lines.findIndex((line) =>
-    line.toLowerCase().includes("skills")
-  );
-  if (skillIndex !== -1) {
-    const possibleSkills = lines
-      .slice(skillIndex + 1, skillIndex + 6)
-      .join(" ");
-    skills = possibleSkills.match(/\b([A-Za-z\+#.]{2,})\b/g) || [];
-  }
+//   // Skills: scan lines after "skills" heading
+//   let skills = [];
+//   const skillIndex = lines.findIndex((line) =>
+//     line.toLowerCase().includes("skills")
+//   );
+//   if (skillIndex !== -1) {
+//     const possibleSkills = lines
+//       .slice(skillIndex + 1, skillIndex + 6)
+//       .join(" ");
+//     skills = possibleSkills.match(/\b([A-Za-z\+#.]{2,})\b/g) || [];
+//   }
 
-  // Education section: collect lines under known degrees
-  const education = [];
-  for (let line of lines) {
-    if (
-      /(b\.?tech|m\.?tech|bsc|msc|mba|diploma|ssc|hsc|intermediate)/i.test(line)
-    ) {
-      education.push(line.trim());
-    }
-  }
+//   // Education section: collect lines under known degrees
+//   const education = [];
+//   for (let line of lines) {
+//     if (
+//       /(b\.?tech|m\.?tech|bsc|msc|mba|diploma|ssc|hsc|intermediate)/i.test(line)
+//     ) {
+//       education.push(line.trim());
+//     }
+//   }
 
-  // Experience summary: look for keywords
-  const expStart = lowerText.indexOf("experience");
-  let experiencesummary = "";
-  if (expStart !== -1) {
-    experiencesummary = text
-      .slice(expStart, expStart + 500)
-      .split("\n")
-      .slice(0, 5)
-      .join(" ");
-  }
+//   // Experience summary: look for keywords
+//   const expStart = lowerText.indexOf("experience");
+//   let experiencesummary = "";
+//   if (expStart !== -1) {
+//     experiencesummary = text
+//       .slice(expStart, expStart + 500)
+//       .split("\n")
+//       .slice(0, 5)
+//       .join(" ");
+//   }
 
-  const yearofexperience = calculateTotalExperience(text);
+//   const yearofexperience = calculateTotalExperience(text);
 
-  return {
-    name,
-    email,
-    mobile,
-    address,
-    skills: [...new Set(skills)].slice(0, 15),
-    education,
-    experiencesummary: experiencesummary.trim(),
-    yearofexperience,
-  };
-}
+//   return {
+//     name,
+//     email,
+//     mobile,
+//     address,
+//     skills: [...new Set(skills)].slice(0, 15),
+//     education,
+//     experiencesummary: experiencesummary.trim(),
+//     yearofexperience,
+//   };
+// }
 
-// Main Route
-const cvpdfRouter = Router();
+// // Main Route
+// const cvpdfRouter = Router();
 
-cvpdfRouter.post("/", (req, res) => {
-  upload(req, res, async (err) => {
-    if (err) return errorResponse(res, 400, err.message || "Upload error");
+// cvpdfRouter.post("/", (req, res) => {
+//   upload(req, res, async (err) => {
+//     if (err) return errorResponse(res, 400, err.message || "Upload error");
 
-    if (!req.file) return errorResponse(res, 400, "No file uploaded");
+//     if (!req.file) return errorResponse(res, 400, "No file uploaded");
 
-    const tempFilePath = req.file.path;
-    const ext = path.extname(tempFilePath).toLowerCase();
+//     const tempFilePath = req.file.path;
+//     const ext = path.extname(tempFilePath).toLowerCase();
 
-    try {
-      const text = await extractText(tempFilePath);
-      const parsedData = localParseResume(text);
+//     try {
+//       const text = await extractText(tempFilePath);
+//       const parsedData = localParseResume(text);
 
-      const resumeDoc = new resumeextractmodel(parsedData);
-      await resumeDoc.save();
+//       const resumeDoc = new resumeextractmodel(parsedData);
+//       await resumeDoc.save();
 
-      const renamedFileName = `${resumeDoc._id}${ext}`;
-      const renamedFilePath = path.join(
-        path.dirname(tempFilePath),
-        renamedFileName
-      );
-      fs.renameSync(tempFilePath, renamedFilePath);
+//       const renamedFileName = `${resumeDoc._id}${ext}`;
+//       const renamedFilePath = path.join(
+//         path.dirname(tempFilePath),
+//         renamedFileName
+//       );
+//       fs.renameSync(tempFilePath, renamedFilePath);
 
-      const folderName = "cadilaresumeextract";
-      let folderId;
-      const folderQuery = await drive.files.list({
-        q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-        fields: "files(id)",
-      });
+//       const folderName = "cadilaresumeextract";
+//       let folderId;
+//       const folderQuery = await drive.files.list({
+//         q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+//         fields: "files(id)",
+//       });
 
-      folderId = folderQuery.data.files[0]?.id;
-      if (!folderId) {
-        const folder = await drive.files.create({
-          resource: {
-            name: folderName,
-            mimeType: "application/vnd.google-apps.folder",
-          },
-          fields: "id",
-        });
-        folderId = folder.data.id;
-      }
+//       folderId = folderQuery.data.files[0]?.id;
+//       if (!folderId) {
+//         const folder = await drive.files.create({
+//           resource: {
+//             name: folderName,
+//             mimeType: "application/vnd.google-apps.folder",
+//           },
+//           fields: "id",
+//         });
+//         folderId = folder.data.id;
+//       }
 
-      const uploaded = await drive.files.create({
-        resource: {
-          name: renamedFileName,
-          parents: [folderId],
-        },
-        media: {
-          mimeType:
-            ext === ".pdf" ? "application/pdf" : "application/octet-stream",
-          body: fs.createReadStream(renamedFilePath),
-        },
-        fields: "id, webViewLink",
-      });
+//       const uploaded = await drive.files.create({
+//         resource: {
+//           name: renamedFileName,
+//           parents: [folderId],
+//         },
+//         media: {
+//           mimeType:
+//             ext === ".pdf" ? "application/pdf" : "application/octet-stream",
+//           body: fs.createReadStream(renamedFilePath),
+//         },
+//         fields: "id, webViewLink",
+//       });
 
-      resumeDoc.originalFileName = uploaded.data.webViewLink;
-      await resumeDoc.save();
-      fs.unlinkSync(renamedFilePath);
+//       resumeDoc.originalFileName = uploaded.data.webViewLink;
+//       await resumeDoc.save();
+//       fs.unlinkSync(renamedFilePath);
 
-      return successResponse(
-        res,
-        "Resume uploaded and parsed (local method)",
-        resumeDoc
-      );
-    } catch (error) {
-      console.error("Resume processing error:", error.message);
-      if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
-      return errorResponse(res, 500, "Resume processing failed");
-    }
-  });
-});
+//       return successResponse(
+//         res,
+//         "Resume uploaded and parsed (local method)",
+//         resumeDoc
+//       );
+//     } catch (error) {
+//       console.error("Resume processing error:", error.message);
+//       if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+//       return errorResponse(res, 500, "Resume processing failed");
+//     }
+//   });
+// });
 
-export default cvpdfRouter;
+// export default cvpdfRouter;

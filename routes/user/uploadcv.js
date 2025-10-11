@@ -1,159 +1,125 @@
 import { Router } from "express";
 import multer from "multer";
-import { google } from "googleapis";
+import * as fs from "fs";
+import { createReadStream } from "fs";
+import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
-import path from "path";
-import fs from "fs";
-import dotenv from "dotenv";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import {
   successResponse,
   errorResponse,
 } from "../../helpers/serverResponse.js";
 import jobapplicantsmodel from "../../model/jobapplicantsmodel.js";
 
-dotenv.config();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Multer temp storage
-const tempStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const tempPath = path.join(__dirname, "../../temp");
-    fs.mkdirSync(tempPath, { recursive: true });
-    cb(null, tempPath);
-  },
-  filename: (req, file, cb) => {
-    cb(null, "temp" + path.extname(file.originalname)); // temporary name
+// --- Guard: required envs
+const {
+  AWS_REGION,
+  AWS_ACCESS_KEY_ID,
+  AWS_SECRET_ACCESS_KEY,
+  AWS_BUCKET_NAME,
+} = process.env;
+
+if (
+  !AWS_REGION ||
+  !AWS_ACCESS_KEY_ID ||
+  !AWS_SECRET_ACCESS_KEY ||
+  !AWS_BUCKET_NAME
+) {
+  // console.error("Missing required AWS_* env vars. Check .env.");
+}
+
+// AWS S3 v3 Setup
+const s3 = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
 });
 
-function checkPdfFileType(file, cb) {
-  const ext = path.extname(file.originalname).toLowerCase();
-  const allowedExts = /\.(pdf|doc|docx)$/i;
-  const allowedMimes = [
-    "application/pdf",
-    "application/msword",
-    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  ];
-  if (allowedExts.test(ext) && allowedMimes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only PDF and Word documents (.doc, .docx) are allowed"));
-  }
-}
+// Multer Setup
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(__dirname, "../../temp");
+    fs.mkdirSync(uploadPath, { recursive: true });
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
 
 const upload = multer({
-  storage: tempStorage,
-  fileFilter: (req, file, cb) => checkPdfFileType(file, cb),
+  storage,
+  fileFilter: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const allowedExts = [".pdf", ".doc", ".docx", ".rtf", ".odt"];
+    if (allowedExts.includes(ext)) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only PDF, Word, RTF, and ODT files are allowed"));
+    }
+  },
 }).single("resume");
 
-// Google Drive setup
-const credentials = JSON.parse(fs.readFileSync("credentials.json"));
-const { client_secret, client_id, redirect_uris } = credentials.installed;
-
-const oAuth2Client = new google.auth.OAuth2(
-  client_id,
-  client_secret,
-  redirect_uris[0]
-);
-oAuth2Client.setCredentials(JSON.parse(fs.readFileSync("token.json")));
-
-const drive = google.drive({ version: "v3", auth: oAuth2Client });
-
 const cvpdfRouter = Router();
-
 cvpdfRouter.post("/:id", (req, res) => {
   upload(req, res, async (err) => {
-    if (err) return errorResponse(res, 400, err.message || "Upload error");
+    if (err) {
+      // Multer error (validation / size / etc.)
+      return errorResponse(res, 400, err.message || "Upload error");
+    }
+
     if (!req.file) return errorResponse(res, 400, "No file uploaded");
 
-    const tempFilePath = req.file.path;
-    const ext = path.extname(tempFilePath).toLowerCase();
-
+    let localPath;
     try {
-      const applicant = await jobapplicantsmodel.findById(req.params.id);
-      if (!applicant) {
-        fs.unlinkSync(tempFilePath);
-        return errorResponse(res, 404, "Applicant not found");
+      const applicantId = req.params.id;
+      const resumepdf = await jobapplicantmodel.findById(applicantId);
+      if (!resumepdf) {
+        // cleanup local file
+        localPath = req.file.path;
+        if (localPath && fs.existsSync(localPath)) fs.unlinkSync(localPath);
+        return errorResponse(res, 404, "Record not found");
       }
 
-      const finalFileName = `${applicant._id}${ext}`;
-      const renamedPath = path.join(path.dirname(tempFilePath), finalFileName);
-      fs.renameSync(tempFilePath, renamedPath);
+      // Build S3 key and upload
+      localPath = req.file.path;
+      const orig = req.file.originalname || "resume";
+      const safeOrig = orig.replace(/[^\w.\-]+/g, "_"); // sanitize name
+      const fileName = `${applicantId}-${Date.now()}-${safeOrig}`;
+      const s3Key = `resumes/${fileName}`;
 
-      // Check for folder or create
-      const folderName = "cadilaJobApplicantsResume";
-      const folderList = await drive.files.list({
-        q: `name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-        fields: "files(id)",
+      // Some providers/clients send odd mimetypes; fall back to octet-stream
+      const contentType = req.file.mimetype || "application/octet-stream";
+
+      const fileStream = createReadStream(localPath);
+      const cmd = new PutObjectCommand({
+        Bucket: AWS_BUCKET_NAME,
+        Key: s3Key,
+        Body: fileStream,
+        ContentType: contentType,
       });
 
-      let folderId = folderList.data.files[0]?.id;
-      if (!folderId) {
-        const folder = await drive.files.create({
-          resource: {
-            name: folderName,
-            mimeType: "application/vnd.google-apps.folder",
-          },
-          fields: "id",
-        });
-        folderId = folder.data.id;
-      }
+      await s3.send(cmd);
 
-      // Upload to Google Drive
-      const mimeTypeMap = {
-        ".pdf": "application/pdf",
-        ".doc": "application/msword",
-        ".docx":
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      };
+      const fileUrl = `https://${AWS_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/${s3Key}`;
 
-      const media = {
-        mimeType: mimeTypeMap[ext] || "application/octet-stream",
-        body: fs.createReadStream(renamedPath),
-      };
-      try {
-        const uploaded = await drive.files.create({
-          resource: {
-            name: finalFileName,
-            parents: [folderId],
-          },
-          media,
-          fields: "id, webViewLink",
-        });
+      // Save URL into the applicant doc
+      resumepdf.pdf = fileUrl;
+      await resumepdf.save();
 
-        // console.log("✅ Upload success:", uploaded.data);
+      // Remove local file after successful upload
+      if (fs.existsSync(localPath)) fs.unlinkSync(localPath);
 
-        // Separate try-catch for permission
-        try {
-          applicant.resume = uploaded.data.webViewLink;
-          await applicant.save();
-
-          fs.unlinkSync(renamedPath);
-
-          return successResponse(
-            res,
-            "Resume uploaded and parsed successfully",
-            applicant
-          );
-        } catch (permErr) {
-          console.error("❌ Permission setting failed:", permErr.message);
-          return errorResponse(
-            res,
-            500,
-            "File uploaded but permission setting failed"
-          );
-        }
-      } catch (driveErr) {
-        console.error("❌ Drive upload failed:", driveErr.message);
-        return errorResponse(res, 500, "Google Drive upload failed");
-      }
+      return successResponse(res, "Resume uploaded successfully", resumepdf);
     } catch (error) {
-      console.error("Resume upload failed:", error.message);
-      if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
-      return errorResponse(res, 500, "Error during resume upload");
+      if (fs.existsSync(req.file?.path)) fs.unlinkSync(req.file.path);
+      return errorResponse(res, 500, "Resume upload failed");
     }
   });
 });
