@@ -154,3 +154,6 @@ token.json
 
 /temp
 /uploads
+
+#process.env
+process.env
