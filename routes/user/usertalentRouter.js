@@ -9,6 +9,7 @@ import { sendMailToAdminforTalent } from "../../helpers/helperFunction.js";
 const usertalentRouter = Router();
 
 usertalentRouter.post("/create", createtalentHandler);
+
 export default usertalentRouter;
 
 async function createtalentHandler(req, res) {
