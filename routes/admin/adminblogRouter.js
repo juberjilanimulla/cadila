@@ -88,9 +88,9 @@ async function createblogHandler(req, res) {
       metadescription,
       keywords,
       content,
-      published: true,
+      published,
     };
-    const blog = await blogsmodel.create(parmas);
+    const blog = await blogmodel.create(parmas);
     successResponse(res, "successfully updated", blog);
   } catch (error) {
     console.log("error", error);
@@ -112,7 +112,7 @@ async function updateblogHandler(req, res) {
       errorResponse(res, 404, "Some params are missing");
       return;
     }
-    const blog = await blogsmodel.findByIdAndUpdate(_id, updatedData, options);
+    const blog = await blogmodel.findByIdAndUpdate(_id, updatedData, options);
     successResponse(res, "successfully updated", blog);
   } catch (error) {
     console.log("error", error);
