@@ -5,6 +5,15 @@ import {
 } from "../../helpers/serverResponse.js";
 import blogmodel from "../../model/blogmodel.js";
 import adminblogimagesRouter from "./adminblogimagesRouter.js";
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
+
+const s3 = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
 
 const adminblogRouter = Router();
 
@@ -16,6 +25,7 @@ adminblogRouter.put("/published", publishedapprovalHandler);
 adminblogRouter.delete("/deleteimage", deleteimageblogHandler);
 adminblogRouter.post("/featured", featuredblogHandler);
 adminblogRouter.use("/blogimage", adminblogimagesRouter);
+
 export default adminblogRouter;
 
 async function getallblogHandler(req, res) {
