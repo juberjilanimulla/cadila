@@ -60,7 +60,7 @@ app.use((err, req, res, next) => {
 //routing
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
-app.use("/api/admin", authMiddleware, isAdminMiddleware, adminRouter);
+app.use("/api/admin", adminRouter);
 app.use("/api/manager", authMiddleware, managerRouter);
 app.use("/api/recruiter", authMiddleware, recruiterRouter);
 app.use("/api/pdf", express.static("./pdfs"));

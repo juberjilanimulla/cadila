@@ -6,6 +6,7 @@ import usertalentRouter from "./usertalentRouter.js";
 import usercontactusRouter from "./usercontactusRouter.js";
 import userjobapplicantsRouter from "./userjobapplicantsRouter.js";
 import userblogRouter from "./userblogRouter.js";
+import usercommentRouter from "./usercommentRouter.js";
 
 const userRouter = Router();
 
@@ -16,5 +17,6 @@ userRouter.use("/jobs", usersjobRouter);
 userRouter.use("/termsandcondition", usertermandconditionRouter);
 userRouter.use("/privacypolicy", userprivacypolicyRouter);
 userRouter.use("/blog", userblogRouter);
+userRouter.use("/comment", usercommentRouter);
 
 export default userRouter;

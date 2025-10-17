@@ -8,6 +8,7 @@ import adminusersRouter from "./adminusersRouter.js";
 import admintermsandconditionRouter from "./admintermsandconditionRouter.js";
 import adminprivacypolicyRouter from "./adminprivacypolicyRouter.js";
 import adminblogRouter from "./adminblogRouter.js";
+import admincommentRouter from "./admincommentRouter.js";
 // import adminresumeextractRouter from "./adminresumeextractRouter.js";
 
 const adminRouter = Router();
@@ -21,5 +22,6 @@ adminRouter.use("/user", adminusersRouter);
 adminRouter.use("/termsandcondition", admintermsandconditionRouter);
 adminRouter.use("/privacypolicy", adminprivacypolicyRouter);
 adminRouter.use("/blog", adminblogRouter);
+adminRouter.use("/comment", admincommentRouter);
 
 export default adminRouter;
